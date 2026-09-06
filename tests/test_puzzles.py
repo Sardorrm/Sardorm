@@ -70,6 +70,14 @@ class PuzzleIntegrityTests(unittest.TestCase):
                 self.assertEqual(options, ["true", "false"], puzzle["id"])
                 self.assertIn(str(puzzle["answer"]).strip().lower(), options, puzzle["id"])
 
+    def test_runtime_extra_pack_path_matches_repository(self):
+        engine = (ROOT / "src/puzzle_engine.gd").read_text(encoding="utf-8")
+        repository = (ROOT / "src/puzzle_repository.gd").read_text(encoding="utf-8")
+        self.assertIn('const EXTRA_PATH_SUFFIX := "_extra.json"', engine)
+        self.assertIn('const EXTRA_PATH_SUFFIX := "_extra.json"', repository)
+        self.assertTrue((ROOT / "data/puzzles_extra.json").exists())
+        self.assertFalse((ROOT / "data/puzzles.extra.json").exists())
+
     def test_difficulty_distribution_is_not_flat(self):
         self.assertEqual({p["difficulty"] for p in PUZZLES}, {1, 2, 3, 4, 5})
         self.assertGreaterEqual(sum(p["difficulty"] == 5 for p in PUZZLES), 10)
