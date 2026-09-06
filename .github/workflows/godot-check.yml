@@ -16,8 +16,20 @@ jobs:
           test -f project.godot
           test -f src/main.gd
           test -f src/puzzle_engine.gd
+          test -f src/level_manager.gd
           test -f src/save_manager.gd
           test -f src/stats_manager.gd
-          test -f src/Main.tscn
+          test -f src/MainScene.tscn
           python3 -m json.tool data/puzzles.json >/dev/null
-          echo "MindShift project structure OK"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('data/puzzles.json').read_text())
+          puzzles = data.get('puzzles', [])
+          assert len(puzzles) >= 10
+          ids = [p['id'] for p in puzzles]
+          assert len(ids) == len(set(ids))
+          assert all(1 <= int(p['difficulty']) <= 5 for p in puzzles)
+          assert all(str(p['prompt']).strip() and str(p['hint']).strip() for p in puzzles)
+          print(f'Validated {len(puzzles)} puzzles and runtime structure')
+          PY
