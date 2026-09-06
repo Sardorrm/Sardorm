@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "puzzles": [
+    {
+      "id": "mvp-001",
+      "category": "pattern",
+      "difficulty": 1,
+      "prompt": "What number comes next? 2, 4, 8, 16, ?",
+      "answer": 32,
+      "hint": "Look at how each number changes from the previous one."
+    },
+    {
+      "id": "mvp-002",
+      "category": "logic",
+      "difficulty": 1,
+      "prompt": "A box contains 3 red balls and 3 blue balls. What is the minimum number of balls you must take without looking to guarantee two balls of the same color?",
+      "answer": 3,
+      "hint": "Consider the worst possible first two draws."
+    },
+    {
+      "id": "mvp-003",
+      "category": "sequence",
+      "difficulty": 1,
+      "prompt": "What comes next? 1, 1, 2, 3, 5, 8, ?",
+      "answer": 13,
+      "hint": "Each term is built from the two before it."
+    },
+    {
+      "id": "mvp-004",
+      "category": "logic",
+      "difficulty": 2,
+      "prompt": "You have one match. A dark room contains a candle, an oil lamp, and a fireplace. What do you light first?",
+      "answer": "match",
+      "hint": "Before lighting any of the three, something else must be lit."
+    },
+    {
+      "id": "mvp-005",
+      "category": "assumption",
+      "difficulty": 2,
+      "prompt": "A farmer has 17 sheep. All but 9 run away. How many remain?",
+      "answer": 9,
+      "hint": "Read the sentence literally."
+    },
+    {
+      "id": "mvp-006",
+      "category": "pattern",
+      "difficulty": 2,
+      "prompt": "Which item does not belong: 2, 3, 5, 7, 9, 11?",
+      "answer": 9,
+      "hint": "Look for a mathematical property shared by the others."
+    },
+    {
+      "id": "mvp-007",
+      "category": "observation",
+      "difficulty": 2,
+      "prompt": "A clock shows 3:15. What is the smaller angle between the hands?",
+      "answer": 7.5,
+      "hint": "The hour hand moves continuously; it is not exactly on 3."
+    },
+    {
+      "id": "mvp-008",
+      "category": "logic",
+      "difficulty": 3,
+      "prompt": "Two doors lead to safety and danger. One guard always lies and one always tells the truth. You may ask one guard one question. What question identifies the safe door?",
+      "answer": "ask what the other guard would say is the safe door, then choose the opposite",
+      "hint": "Make both guards point to the same wrong door."
+    },
+    {
+      "id": "mvp-009",
+      "category": "spatial",
+      "difficulty": 3,
+      "prompt": "A cube has all six faces painted. It is cut into 27 equal smaller cubes. How many small cubes have exactly two painted faces?",
+      "answer": 12,
+      "hint": "Think about the edges, excluding corners."
+    },
+    {
+      "id": "mvp-010",
+      "category": "mindshift",
+      "difficulty": 3,
+      "prompt": "A puzzle says: 'Press the green button to continue.' The green button is disabled. What should you investigate first?",
+      "answer": "the rule or wording rather than repeatedly pressing the button",
+      "hint": "The puzzle may be testing your assumption, not your reflexes."
+    }
+  ]
+}
