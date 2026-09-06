@@ -1,9 +1,9 @@
 ; MindShift Godot 4 project
-; Created as the first runtime foundation for the mobile-first MVP.
+; Android-first mobile puzzle game.
 
 [application]
 config/name="MindShift"
-run/main_scene="res://src/Main.tscn"
+run/main_scene="res://src/MainScene.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 
 [display]
