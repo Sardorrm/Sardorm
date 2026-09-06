@@ -9,6 +9,7 @@ var events := EventTracker.new()
 var session := GameSession.new()
 var progression := ProgressionService.new()
 var daily := DailyChallengeService.new()
+var streak := StreakManager.new()
 var lives := LifeManager.new()
 var current_index := 0
 var active_puzzle: PuzzleDefinition
@@ -35,6 +36,7 @@ func _ready() -> void:
     progression.setup(level_manager, stats, achievements, events)
     progression.achievement_unlocked.connect(_on_achievement_unlocked)
     daily.setup(repository, save_data)
+    streak.load_from_dict(save_data.get("streak", {}))
     lives.load_from_dict(save_data.get("lives", {}))
     current_index = level_manager.get_current_level()
     events.record(EventTracker.APP_STARTED, {"puzzle_count": engine.puzzles.size()})
@@ -94,6 +96,7 @@ func _show_home() -> void:
     content.add_child(_label("MindShift", 44))
     content.add_child(_label("Javobni topma.\nFikrlash usulingni o‘zgart.", 20))
     content.add_child(_label("Progress: %d / %d   •   ❤️ %d/%d" % [level_manager.get_progress_count(), engine.puzzles.size(), lives.lives, LifeManager.MAX_LIVES], 18))
+    content.add_child(_label("🔥 Daily streak: %d   •   Rekord: %d" % [streak.current_streak, streak.best_streak], 17))
     content.add_child(_label("🧠 %s" % str(stats.get_profile().name), 17))
     content.add_child(_button("DAVOM ETISH", _continue_game, 70))
     content.add_child(_button("BUGUNGI CHALLENGE", _start_daily))
@@ -159,11 +162,11 @@ func _show_puzzle() -> void:
 
 func _render_puzzle(puzzle: PuzzleDefinition, progress_text: String) -> void:
     active_puzzle = puzzle
-    session.start(active_puzzle, DifficultyManager.time_limit(active_puzzle.difficulty))
+    session.start(active_puzzle, DifficultyManager.recommended_time(active_puzzle))
     events.record(EventTracker.LEVEL_STARTED, {"level": current_index + 1, "puzzle_id": active_puzzle.id, "difficulty": active_puzzle.difficulty, "daily": daily_mode})
     content.add_child(_label("MINDSHIFT", 32))
     content.add_child(_label(progress_text + "   •   ❤️ %d" % lives.lives, 17))
-    content.add_child(_label("%s  •  QIYINLIK %d" % [active_puzzle.category.to_upper(), active_puzzle.difficulty], 15))
+    content.add_child(_label("%s  •  %s" % [active_puzzle.category.to_upper(), DifficultyManager.tier_name(active_puzzle.difficulty)], 15))
     timer_label = _label("⏱ %ds" % int(session.time_limit_seconds), 17)
     content.add_child(timer_label)
     var question := _label(active_puzzle.prompt, 25)
@@ -208,14 +211,18 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
         puzzle_finished = true
         timer_tick.stop()
         var result := progression.record_attempt(active_puzzle, true, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
+        result.score = int(round(float(result.score) * DifficultyManager.score_multiplier(active_puzzle.difficulty) * streak.get_multiplier()))
         feedback.text = "✓ TO‘G‘RI!  %d ⭐  +%d" % [result.stars, result.score]
         if input != null:
             input.editable = false
         hint.text = "🧠 " + active_puzzle.explanation if active_puzzle.has_explanation() else ""
         if not result.newly_unlocked.is_empty():
             feedback.text += "  🏆"
+        if daily_mode:
+            daily.record_solved()
         _save()
         if daily_mode:
+            daily_position += 1
             content.add_child(_button("KEYINGISI", _show_daily_puzzle, 68))
         else:
             content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
@@ -251,7 +258,11 @@ func _start_daily() -> void:
     if lives.is_empty():
         _show_lives_empty()
         return
+    if daily.is_completed():
+        _show_daily()
+        return
     daily_mode = true
+    daily.reset_progress()
     daily_puzzles = daily.get_puzzles()
     daily_position = 0
     if daily_puzzles.is_empty():
@@ -268,13 +279,15 @@ func _show_daily_puzzle() -> void:
     _render_puzzle(p, "Daily %d / %d" % [daily_position + 1, daily_puzzles.size()])
 
 func _complete_daily() -> void:
-    daily.mark_completed()
+    if daily.is_session_completed():
+        daily.mark_completed()
+        streak.record_daily_completion(daily.current_date)
     daily_mode = false
     _save()
     _clear_content()
     content.add_child(_label("🔥 DAILY CHALLENGE TUGADI!", 30))
     content.add_child(_label("Bugungi %d ta puzzle muvaffaqiyatli bajarildi." % daily_puzzles.size(), 20))
-    content.add_child(_label("Sizning fikrlash ritmingiz kuchaymoqda! 🧠", 18))
+    content.add_child(_label("🔥 Streak: %d kun • Rekord: %d kun" % [streak.current_streak, streak.best_streak], 18))
     content.add_child(_button("BOSH MENYU", _show_home, 68))
 
 func _show_daily() -> void:
@@ -283,6 +296,7 @@ func _show_daily() -> void:
     var puzzles := daily.get_puzzles()
     content.add_child(_label("BUGUNGI CHALLENGE", 32))
     content.add_child(_label("%s • %d ta puzzle" % [daily.current_date, puzzles.size()], 18))
+    content.add_child(_label("🔥 Streak: %d • Rekord: %d" % [streak.current_streak, streak.best_streak], 17))
     if daily.is_completed():
         content.add_child(_label("✓ Bugungi challenge bajarilgan", 20))
     else:
@@ -330,35 +344,24 @@ func _show_stats() -> void:
     _clear_content()
     var profile := stats.get_profile()
     content.add_child(_label("STATISTIKA", 34))
-    content.add_child(_label("🧠 " + str(profile.name), 27))
-    content.add_child(_label("Profil balli: %.0f" % float(profile.score), 18))
-    content.add_child(_label("Yechilgan: %d\nXato: %d\nAniqlik: %.0f%%\nHintlar: %d\nO‘rtacha vaqt: %.1f s\nJonlar: %d/%d" % [stats.solved, stats.failed, stats.get_accuracy(), stats.hints, stats.get_average_time(), lives.lives, LifeManager.MAX_LIVES], 19))
-    content.add_child(_label("Achievementlar: %d / %d" % [achievements.unlocked.size(), AchievementManager.DEFINITIONS.size()], 17))
-    content.add_child(_button("DARAJALAR", _show_levels))
+    content.add_child(_label("Yechilgan: %d\nXatolar: %d\nAniqlik: %.1f%%\nO‘rtacha vaqt: %.1fs" % [stats.solved, stats.failed, stats.get_accuracy(), stats.get_average_time()], 19))
+    content.add_child(_label("🔥 Daily streak: %d\n🏆 Rekord: %d" % [streak.current_streak, streak.best_streak], 19))
+    content.add_child(_label("🧠 Profil: %s (%.0f/100)" % [profile.name, profile.score], 20))
     content.add_child(_button("ORTGA", _show_home))
 
 func _show_settings() -> void:
     _clear_content()
     content.add_child(_label("SOZLAMALAR", 34))
-    content.add_child(_label("MindShift ma’lumotlari telefonda saqlanadi.", 17))
-    content.add_child(_button("PROGRESSNI TOZALASH", _reset_progress))
+    content.add_child(_label("MindShift offline ishlaydi.\nProgress qurilmada saqlanadi.", 18))
+    content.add_child(_button("PROGRESSNI TOZALASH", _reset_progress, 60))
     content.add_child(_button("ORTGA", _show_home))
 
 func _reset_progress() -> void:
     SaveManager.clear_progress()
-    stats = StatsManager.new()
-    achievements = AchievementManager.new()
-    lives = LifeManager.new()
-    progression.setup(level_manager, stats, achievements, events)
-    daily.setup(repository, {})
-    level_manager.setup(engine, {})
-    current_index = 0
-    _save()
-    _show_home()
+    get_tree().reload_current_scene()
 
-func _on_achievement_unlocked(_achievement_id: String) -> void:
-    _save()
+func _on_achievement_unlocked(achievement_id: String) -> void:
+    events.record("achievement_unlocked", {"id": achievement_id})
 
 func _save() -> void:
-    var level_data := level_manager.to_save_dict()
-    SaveManager.save_progress(level_data.current_level, level_data.completed_levels, stats.hints, stats.to_dict(), achievements.to_dict(), {}, daily.to_dict(), lives.to_dict())
+    SaveManager.save_progress(level_manager.current_level, level_manager.completed_levels, stats.hints, stats.to_dict(), achievements.to_dict(), {}, daily.to_dict(), lives.to_dict(), streak.to_dict())
