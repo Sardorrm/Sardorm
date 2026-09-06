@@ -44,7 +44,9 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("result.score", code)
         self.assertIn("result.stars", code)
         self.assertIn("session.get_elapsed_seconds()", code)
-        self.assertIn("✓ TO‘G‘RI!", code)
+        self.assertIn("reward_multiplier", code)
+        self.assertIn("+%d BALL", code)
+        self.assertIn("⏱ %ds", code)
         self.assertIn("_polish_feedback", polish)
 
 
