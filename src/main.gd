@@ -210,8 +210,9 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
     if correct:
         puzzle_finished = true
         timer_tick.stop()
-        var result := progression.record_attempt(active_puzzle, true, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
-        result.score = int(round(float(result.score) * DifficultyManager.score_multiplier(active_puzzle.difficulty) * streak.get_multiplier()))
+        var result := progression.record_attempt(active_puzzle, true, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0, not daily_mode)
+        var reward_multiplier := streak.get_multiplier() if daily_mode else 1.0
+        result.score = int(round(float(result.score) * reward_multiplier))
         feedback.text = "✓ TO‘G‘RI!  %d ⭐  +%d" % [result.stars, result.score]
         if input != null:
             input.editable = false
@@ -222,12 +223,12 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
             daily.record_solved()
         _save()
         if daily_mode:
-            daily_position += 1
+            daily_position = daily.current_position
             content.add_child(_button("KEYINGISI", _show_daily_puzzle, 68))
         else:
             content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
     else:
-        progression.record_attempt(active_puzzle, false, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
+        progression.record_attempt(active_puzzle, false, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0, not daily_mode)
         lives.lose_life()
         feedback.text = "Hali emas. ❤️ -1. Yana bir bor o‘ylab ko‘ring."
         _save()
@@ -262,11 +263,10 @@ func _start_daily() -> void:
         _show_daily()
         return
     daily_mode = true
-    daily.reset_progress()
     daily_puzzles = daily.get_puzzles()
-    daily_position = 0
-    if daily_puzzles.is_empty():
-        _show_daily()
+    daily_position = daily.current_position
+    if daily_position >= daily_puzzles.size():
+        _complete_daily()
         return
     _show_daily_puzzle()
 
@@ -286,7 +286,7 @@ func _complete_daily() -> void:
     _save()
     _clear_content()
     content.add_child(_label("🔥 DAILY CHALLENGE TUGADI!", 30))
-    content.add_child(_label("Bugungi %d ta puzzle muvaffaqiyatli bajarildi." % daily_puzzles.size(), 20))
+    content.add_child(_label("Bugungi %d ta puzzle yakunlandi." % daily_puzzles.size(), 20))
     content.add_child(_label("🔥 Streak: %d kun • Rekord: %d kun" % [streak.current_streak, streak.best_streak], 18))
     content.add_child(_button("BOSH MENYU", _show_home, 68))
 
@@ -302,8 +302,9 @@ func _show_daily() -> void:
     else:
         for i in range(puzzles.size()):
             var p: PuzzleDefinition = puzzles[i] if puzzles[i] is PuzzleDefinition else PuzzleDefinition.from_dict(puzzles[i])
-            content.add_child(_label("%d. %s" % [i + 1, p.prompt], 17))
-        content.add_child(_button("BOSHLASH", _start_daily, 68))
+            var marker := "✓" if i < daily.current_position and daily.is_session_completed() else ""
+            content.add_child(_label("%d. %s %s" % [i + 1, p.prompt, marker], 17))
+        content.add_child(_button("DAVOM ETISH", _start_daily, 68))
     content.add_child(_button("ORTGA", _show_home))
 
 func _on_timer_tick() -> void:
@@ -321,8 +322,10 @@ func _handle_timeout() -> void:
     puzzle_finished = true
     timer_tick.stop()
     var elapsed := session.get_elapsed_seconds()
-    progression.record_attempt(active_puzzle, false, elapsed, session.attempts, session.hints_used > 0)
+    progression.record_attempt(active_puzzle, false, elapsed, session.attempts, session.hints_used > 0, not daily_mode)
     lives.lose_life()
+    if daily_mode:
+        daily.record_failed()
     events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": false, "timeout": true, "daily": daily_mode})
     _save()
     _show_timeout()
@@ -335,7 +338,7 @@ func _show_timeout() -> void:
     if lives.is_empty():
         content.add_child(_button("JONLAR TUGADI", _show_lives_empty, 68))
     elif daily_mode:
-        daily_position += 1
+        daily_position = daily.current_position
         content.add_child(_button("DAILY DAVOM ETISH", _show_daily_puzzle, 68))
     else:
         content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
