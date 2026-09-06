@@ -43,5 +43,5 @@ jobs:
       - name: Parse project with Godot
         run: |
           set -e
-          docker pull barichello/godot-ci:4.3.0
-          docker run --rm -v "$PWD:/project" barichello/godot-ci:4.3.0 godot --headless --path /project --editor --quit
+          docker pull barichello/godot-ci:4.3
+          docker run --rm -v "$PWD:/project" barichello/godot-ci:4.3 godot --headless --path /project --editor --quit
