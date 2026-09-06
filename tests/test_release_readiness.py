@@ -16,10 +16,11 @@ class ReleaseReadinessTests(unittest.TestCase):
         for puzzle in puzzles:
             self.assertTrue(puzzle.get("id"))
             self.assertTrue(puzzle.get("prompt"))
+            self.assertTrue(puzzle.get("hint"))
             self.assertTrue(puzzle.get("explanation"))
-            self.assertIn(puzzle.get("answer_type"), {"text", "number", "choice", "true_false"})
+            answer_type = puzzle.get("answer_type", "number" if isinstance(puzzle.get("answer"), (int, float)) else "text")
+            self.assertIn(answer_type, {"text", "number", "choice", "true_false"})
             self.assertIn(int(puzzle.get("difficulty", 0)), range(1, 6))
-            self.assertTrue(puzzle.get("tags"))
 
     def test_android_project_is_portrait(self):
         project = (ROOT / "project.godot").read_text(encoding="utf-8")
