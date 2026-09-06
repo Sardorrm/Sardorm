@@ -42,4 +42,6 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Parse project with Godot
         run: |
+          set -e
+          docker pull barichello/godot-ci:4.3.0
           docker run --rm -v "$PWD:/project" barichello/godot-ci:4.3.0 godot --headless --path /project --editor --quit
