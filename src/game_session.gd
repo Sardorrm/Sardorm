@@ -3,6 +3,7 @@ extends RefCounted
 
 signal state_changed(state: String)
 signal answer_evaluated(correct: bool, elapsed_seconds: float)
+signal attempt_failed(attempts: int)
 
 const STATE_IDLE := "idle"
 const STATE_ACTIVE := "active"
@@ -28,18 +29,20 @@ func start(new_puzzle: PuzzleDefinition) -> bool:
     _set_state(STATE_ACTIVE)
     return true
 
-func submit(answer: String, engine: PuzzleEngine) -> bool:
-    if state != STATE_ACTIVE or puzzle == null or engine == null:
+func submit(answer: String) -> bool:
+    if state != STATE_ACTIVE or puzzle == null:
         return false
     attempts += 1
     last_answer = answer
-    var correct := _matches_answer(engine, answer)
+    var correct := _matches_answer(answer)
+    var elapsed := get_elapsed_seconds()
     if correct:
         _set_state(STATE_SOLVED)
     else:
         _set_state(STATE_FAILED)
+        attempt_failed.emit(attempts)
         _set_state(STATE_ACTIVE)
-    answer_evaluated.emit(correct, get_elapsed_seconds())
+    answer_evaluated.emit(correct, elapsed)
     return correct
 
 func use_hint() -> bool:
@@ -53,6 +56,9 @@ func get_elapsed_seconds() -> float:
         return 0.0
     return max(0.0, float(Time.get_ticks_msec() - started_at_msec) / 1000.0)
 
+func get_failed_attempts() -> int:
+    return max(0, attempts - (1 if state == STATE_SOLVED else 0))
+
 func is_complete() -> bool:
     return state == STATE_SOLVED
 
@@ -64,14 +70,21 @@ func reset() -> void:
     last_answer = ""
     _set_state(STATE_IDLE)
 
-func _matches_answer(engine: PuzzleEngine, value: String) -> bool:
-    var index := engine.puzzles.find(puzzle.to_dict())
-    if index >= 0:
-        return engine.check_answer(index, value)
+func _matches_answer(value: String) -> bool:
     for expected in puzzle.get_answers():
-        if str(expected).strip_edges().to_lower() == value.strip_edges().to_lower():
+        if expected is int or expected is float:
+            var parsed := value.strip_edges().to_float()
+            if is_finite(parsed) and abs(parsed - float(expected)) < 0.0001:
+                return true
+        elif _normalize(str(expected)) == _normalize(value):
             return true
     return false
+
+func _normalize(value: String) -> String:
+    var text := value.strip_edges().to_lower()
+    while text.contains("  "):
+        text = text.replace("  ", " ")
+    return text
 
 func _set_state(next_state: String) -> void:
     state = next_state
