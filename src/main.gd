@@ -36,12 +36,10 @@ func _build_shell() -> void:
     root_ui = Control.new()
     root_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     add_child(root_ui)
-
     var background := ColorRect.new()
     background.color = Color("0b0b12")
     background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     root_ui.add_child(background)
-
     var margin := MarginContainer.new()
     margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     margin.add_theme_constant_override("margin_left", 24)
@@ -49,7 +47,6 @@ func _build_shell() -> void:
     margin.add_theme_constant_override("margin_top", 28)
     margin.add_theme_constant_override("margin_bottom", 28)
     root_ui.add_child(margin)
-
     content = VBoxContainer.new()
     content.add_theme_constant_override("separation", 14)
     margin.add_child(content)
@@ -129,11 +126,7 @@ func _show_puzzle() -> void:
 
     active_puzzle = PuzzleDefinition.from_dict(raw_puzzle)
     session.start(active_puzzle)
-    events.record(EventTracker.LEVEL_STARTED, {
-        "level": current_index + 1,
-        "puzzle_id": active_puzzle.id,
-        "difficulty": active_puzzle.difficulty
-    })
+    events.record(EventTracker.LEVEL_STARTED, {"level": current_index + 1, "puzzle_id": active_puzzle.id, "difficulty": active_puzzle.difficulty})
 
     content.add_child(_label("MINDSHIFT", 32))
     content.add_child(_label("Daraja %d / %d   •   %d%%" % [current_index + 1, engine.puzzles.size(), int(level_manager.get_progress_percent())], 17))
@@ -145,23 +138,21 @@ func _show_puzzle() -> void:
 
     var answer := LineEdit.new()
     answer.name = "AnswerInput"
-    answer.placeholder_text = "Javobingiz..."
+    answer.placeholder_text = "Raqam kiriting..." if PuzzleInteraction.input_type(active_puzzle) == PuzzleInteraction.TYPE_NUMBER else "Javobingiz..."
     answer.custom_minimum_size = Vector2(0, 64)
     answer.add_theme_font_size_override("font_size", 21)
+    if PuzzleInteraction.input_type(active_puzzle) == PuzzleInteraction.TYPE_NUMBER:
+        answer.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
     content.add_child(answer)
 
     var feedback := _label("", 19)
-    feedback.name = "Feedback"
     content.add_child(feedback)
     var hint := _label("", 17)
-    hint.name = "Hint"
     content.add_child(hint)
 
-    var check := _button("TEKSHIRISH", func(): _check_answer(answer, feedback, hint), 68)
-    content.add_child(check)
+    content.add_child(_button("TEKSHIRISH", func(): _check_answer(answer, feedback, hint), 68))
     content.add_child(_button("HINT", func(): _use_hint(hint), 54))
     content.add_child(_button("DARAJALAR", _show_levels, 54))
-
     answer.text_submitted.connect(func(_v): _check_answer(answer, feedback, hint))
     answer.grab_focus()
 
@@ -169,20 +160,19 @@ func _check_answer(answer: LineEdit, feedback: Label, hint: Label) -> void:
     if not answer.editable or active_puzzle == null or session.state != GameSession.STATE_ACTIVE:
         return
     var correct := session.submit(answer.text)
-    events.record(EventTracker.ANSWER_SUBMITTED, {
-        "puzzle_id": active_puzzle.id,
-        "correct": correct,
-        "attempt": session.attempts
-    })
+    events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": correct, "attempt": session.attempts})
     if correct:
         var result := progression.record_attempt(active_puzzle, true, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
         feedback.text = "✓ TO‘G‘RI!  %d ⭐  +%d" % [result.stars, result.score]
         answer.editable = false
         _save()
-        if not result.newly_unlocked.is_empty():
+        if active_puzzle.has_explanation():
+            hint.text = "🧠 " + active_puzzle.explanation
+        elif not result.newly_unlocked.is_empty():
             hint.text = "🏆 Yangi achievement!"
-        var next_button := _button("KEYINGI DARAJA", _next_level, 68)
-        content.add_child(next_button)
+        if not result.newly_unlocked.is_empty():
+            feedback.text += "  🏆"
+        content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
     else:
         progression.record_attempt(active_puzzle, false, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
         feedback.text = "Hali emas. Yana bir bor o‘ylab ko‘ring."
@@ -239,10 +229,4 @@ func _on_achievement_unlocked(_achievement_id: String) -> void:
 
 func _save() -> void:
     var level_data := level_manager.to_save_dict()
-    SaveManager.save_progress(
-        level_data.current_level,
-        level_data.completed_levels,
-        stats.hints,
-        stats.to_dict(),
-        achievements.to_dict()
-    )
+    SaveManager.save_progress(level_data.current_level, level_data.completed_levels, stats.hints, stats.to_dict(), achievements.to_dict())
