@@ -1,85 +1,35 @@
 {
   "version": 1,
   "puzzles": [
-    {
-      "id": "mvp-001",
-      "category": "pattern",
-      "difficulty": 1,
-      "prompt": "What number comes next? 2, 4, 8, 16, ?",
-      "answer": 32,
-      "hint": "Look at how each number changes from the previous one."
-    },
-    {
-      "id": "mvp-002",
-      "category": "logic",
-      "difficulty": 1,
-      "prompt": "A box contains 3 red balls and 3 blue balls. What is the minimum number of balls you must take without looking to guarantee two balls of the same color?",
-      "answer": 3,
-      "hint": "Consider the worst possible first two draws."
-    },
-    {
-      "id": "mvp-003",
-      "category": "sequence",
-      "difficulty": 1,
-      "prompt": "What comes next? 1, 1, 2, 3, 5, 8, ?",
-      "answer": 13,
-      "hint": "Each term is built from the two before it."
-    },
-    {
-      "id": "mvp-004",
-      "category": "logic",
-      "difficulty": 2,
-      "prompt": "You have one match. A dark room contains a candle, an oil lamp, and a fireplace. What do you light first?",
-      "answer": "match",
-      "hint": "Before lighting any of the three, something else must be lit."
-    },
-    {
-      "id": "mvp-005",
-      "category": "assumption",
-      "difficulty": 2,
-      "prompt": "A farmer has 17 sheep. All but 9 run away. How many remain?",
-      "answer": 9,
-      "hint": "Read the sentence literally."
-    },
-    {
-      "id": "mvp-006",
-      "category": "pattern",
-      "difficulty": 2,
-      "prompt": "Which item does not belong: 2, 3, 5, 7, 9, 11?",
-      "answer": 9,
-      "hint": "Look for a mathematical property shared by the others."
-    },
-    {
-      "id": "mvp-007",
-      "category": "observation",
-      "difficulty": 2,
-      "prompt": "A clock shows 3:15. What is the smaller angle between the hands?",
-      "answer": 7.5,
-      "hint": "The hour hand moves continuously; it is not exactly on 3."
-    },
-    {
-      "id": "mvp-008",
-      "category": "logic",
-      "difficulty": 3,
-      "prompt": "Two doors lead to safety and danger. One guard always lies and one always tells the truth. You may ask one guard one question. What question identifies the safe door?",
-      "answer": "ask what the other guard would say is the safe door, then choose the opposite",
-      "hint": "Make both guards point to the same wrong door."
-    },
-    {
-      "id": "mvp-009",
-      "category": "spatial",
-      "difficulty": 3,
-      "prompt": "A cube has all six faces painted. It is cut into 27 equal smaller cubes. How many small cubes have exactly two painted faces?",
-      "answer": 12,
-      "hint": "Think about the edges, excluding corners."
-    },
-    {
-      "id": "mvp-010",
-      "category": "mindshift",
-      "difficulty": 3,
-      "prompt": "A puzzle says: 'Press the green button to continue.' The green button is disabled. What should you investigate first?",
-      "answer": "the rule or wording rather than repeatedly pressing the button",
-      "hint": "The puzzle may be testing your assumption, not your reflexes."
-    }
+    {"id":"mvp-001","category":"pattern","difficulty":1,"prompt":"What number comes next? 2, 4, 8, 16, ?","answer":32,"hint":"Look at how each number changes from the previous one."},
+    {"id":"mvp-002","category":"logic","difficulty":1,"prompt":"A box contains 3 red balls and 3 blue balls. What is the minimum number of balls you must take without looking to guarantee two balls of the same color?","answer":3,"hint":"Consider the worst possible first two draws."},
+    {"id":"mvp-003","category":"sequence","difficulty":1,"prompt":"What comes next? 1, 1, 2, 3, 5, 8, ?","answer":13,"hint":"Each term is built from the two before it."},
+    {"id":"mvp-004","category":"logic","difficulty":2,"prompt":"You have one match. A dark room contains a candle, an oil lamp, and a fireplace. What do you light first?","answer":"match","hint":"Before lighting any of the three, something else must be lit."},
+    {"id":"mvp-005","category":"assumption","difficulty":2,"prompt":"A farmer has 17 sheep. All but 9 run away. How many remain?","answer":9,"hint":"Read the sentence literally."},
+    {"id":"mvp-006","category":"pattern","difficulty":2,"prompt":"Which item does not belong: 2, 3, 5, 7, 9, 11?","answer":9,"hint":"Look for a mathematical property shared by the others."},
+    {"id":"mvp-007","category":"observation","difficulty":2,"prompt":"A clock shows 3:15. What is the smaller angle between the hands?","answer":7.5,"hint":"The hour hand moves continuously; it is not exactly on 3."},
+    {"id":"mvp-008","category":"logic","difficulty":3,"prompt":"Two doors lead to safety and danger. One guard always lies and one always tells the truth. You may ask one guard one question. What question identifies the safe door?","answer":"ask what the other guard would say is the safe door, then choose the opposite","hint":"Make both guards point to the same wrong door."},
+    {"id":"mvp-009","category":"spatial","difficulty":3,"prompt":"A cube has all six faces painted. It is cut into 27 equal smaller cubes. How many small cubes have exactly two painted faces?","answer":12,"hint":"Think about the edges, excluding corners."},
+    {"id":"mvp-010","category":"mindshift","difficulty":3,"prompt":"A puzzle says: 'Press the green button to continue.' The green button is disabled. What should you investigate first?","answer":"the rule or wording rather than repeatedly pressing the button","hint":"The puzzle may be testing your assumption, not your reflexes."},
+    {"id":"mvp-011","category":"pattern","difficulty":1,"prompt":"What number comes next? 5, 10, 15, 20, ?","answer":25,"hint":"The same amount is added each time."},
+    {"id":"mvp-012","category":"pattern","difficulty":2,"prompt":"What number comes next? 1, 4, 9, 16, ?","answer":25,"hint":"These are squares of consecutive whole numbers."},
+    {"id":"mvp-013","category":"logic","difficulty":2,"prompt":"You have 10 apples and give 3 away. How many apples do you have left?","answer":7,"hint":"Subtract the apples you gave away."},
+    {"id":"mvp-014","category":"assumption","difficulty":2,"prompt":"A plane crashes exactly on the border between two countries. Where do you bury the survivors?","answer":"you do not bury survivors","hint":"Focus on the word survivors."},
+    {"id":"mvp-015","category":"observation","difficulty":2,"prompt":"Which word is different: CAT, DOG, COW, CAR, HORSE?","answer":"car","hint":"Four are living animals."},
+    {"id":"mvp-016","category":"sequence","difficulty":2,"prompt":"What comes next? 20, 18, 15, 11, ?","answer":6,"hint":"Subtract 2, then 3, then 4, then 5."},
+    {"id":"mvp-017","category":"logic","difficulty":3,"prompt":"A room has 4 corners. In each corner sits one cat. Each cat sees 3 cats. How many cats are in the room?","answer":4,"hint":"Do not create extra cats from the wording."},
+    {"id":"mvp-018","category":"spatial","difficulty":3,"prompt":"A cube is painted on every outside face and cut into 8 equal cubes. How many small cubes have exactly three painted faces?","answer":8,"hint":"Only the corner cubes have three painted faces."},
+    {"id":"mvp-019","category":"logic","difficulty":3,"prompt":"A farmer has chickens and cows. There are 10 heads and 28 legs. How many cows are there?","answer":4,"hint":"Start with 10 animals as if they all had two legs, then account for extra legs."},
+    {"id":"mvp-020","category":"mindshift","difficulty":3,"prompt":"You are told: 'The next answer is not 5.' Which number is safe to test first if the puzzle gives no other information?","answer":"there is not enough information","hint":"A statement can rule something out without identifying the answer."},
+    {"id":"mvp-021","category":"pattern","difficulty":3,"prompt":"What number comes next? 3, 6, 12, 24, ?","answer":48,"hint":"Each term is multiplied by the same number."},
+    {"id":"mvp-022","category":"sequence","difficulty":3,"prompt":"What comes next? 2, 3, 5, 8, 12, ?","answer":17,"hint":"The added amount increases by one each time."},
+    {"id":"mvp-023","category":"logic","difficulty":4,"prompt":"Five machines make five items in five minutes. How many minutes would 100 machines take to make 100 items at the same rate?","answer":5,"hint":"Each machine works at its own rate."},
+    {"id":"mvp-024","category":"assumption","difficulty":4,"prompt":"A man shaves several times a day but still has a beard. Who is he?","answer":"a barber","hint":"Think about whose beard he might be shaving."},
+    {"id":"mvp-025","category":"observation","difficulty":4,"prompt":"If you overtake the person in second place in a race, what place are you in?","answer":2,"hint":"You take the place of the person you passed."},
+    {"id":"mvp-026","category":"spatial","difficulty":4,"prompt":"A large cube is divided into 3×3×3 small cubes. How many small cubes have no painted faces if only the outside of the large cube is painted?","answer":1,"hint":"Only the single center cube is completely inside."},
+    {"id":"mvp-027","category":"logic","difficulty":4,"prompt":"You have two ropes. Each rope takes exactly one hour to burn, but burns unevenly. How can you measure exactly 30 minutes?","answer":"light both ends of one rope","hint":"Burning from both ends halves the total burn time."},
+    {"id":"mvp-028","category":"mindshift","difficulty":4,"prompt":"A locked box has a sign saying 'The key is inside this box.' What is the first assumption you should question?","answer":"that the sign must be true","hint":"A statement on a puzzle is not automatically a fact."},
+    {"id":"mvp-029","category":"pattern","difficulty":5,"prompt":"What number comes next? 1, 2, 6, 24, 120, ?","answer":720,"hint":"Each number is multiplied by the next whole number."},
+    {"id":"mvp-030","category":"mindshift","difficulty":5,"prompt":"You have a candle, a stove and a lamp in a dark room, plus one match. What do you light first?","answer":"match","hint":"Before the candle, stove or lamp can burn, the match must be lit."}
   ]
 }
