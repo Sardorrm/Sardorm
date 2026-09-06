@@ -4,6 +4,7 @@ extends RefCounted
 var solved := 0
 var failed := 0
 var hints := 0
+var total_score := 0
 var total_time_seconds := 0.0
 var solved_time_seconds := 0.0
 var attempt_counted_time_seconds := 0.0
@@ -13,15 +14,17 @@ func load_from_dict(data: Dictionary) -> void:
     solved = max(0, int(data.get("solved", 0)))
     failed = max(0, int(data.get("failed", 0)))
     hints = max(0, int(data.get("hints", data.get("hints_used", 0))))
+    total_score = max(0, int(data.get("total_score", 0)))
     total_time_seconds = max(0.0, float(data.get("total_time_seconds", 0.0)))
     solved_time_seconds = max(0.0, float(data.get("solved_time_seconds", 0.0)))
     attempt_counted_time_seconds = max(0.0, float(data.get("attempt_counted_time_seconds", total_time_seconds)))
     var categories = data.get("category_stats", {})
     category_stats = categories.duplicate(true) if typeof(categories) == TYPE_DICTIONARY else {}
 
-func record_solved(seconds: float, category: String = "") -> void:
+func record_solved(seconds: float, category: String = "", score: int = 0) -> void:
     var elapsed := max(seconds, 0.0)
     solved += 1
+    total_score += max(0, score)
     total_time_seconds += elapsed
     solved_time_seconds += elapsed
     attempt_counted_time_seconds += elapsed
@@ -78,6 +81,7 @@ func to_dict() -> Dictionary:
         "solved": solved,
         "failed": failed,
         "hints": hints,
+        "total_score": total_score,
         "total_time_seconds": total_time_seconds,
         "solved_time_seconds": solved_time_seconds,
         "attempt_counted_time_seconds": attempt_counted_time_seconds,
