@@ -14,6 +14,9 @@
 - [x] Persistent statistics
 - [x] Achievements
 - [x] Deterministic puzzle repository
+- [x] Score + star result feedback
+- [x] Mobile timer warning/critical feedback
+- [x] Haptic feedback on mobile buttons
 
 ## Content quality gates
 
@@ -35,6 +38,7 @@
 - [x] Touch-oriented answer controls
 - [x] Timer and progress feedback
 - [x] Project-wide mobile dark theme with button/input/panel states
+- [x] Result feedback shows stars, score, time and daily multiplier when applicable
 - [ ] Final safe-area/device testing
 - [ ] Final visual polish pass on real device
 - [ ] Accessibility pass: text size, contrast, touch targets
