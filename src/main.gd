@@ -19,6 +19,7 @@ var daily_position := 0
 var daily_puzzles: Array = []
 var timer_label: Label
 var timer_tick: Timer
+var puzzle_finished := false
 
 func _ready() -> void:
     if not engine.load_from_file("res://data/puzzles.json"):
@@ -68,6 +69,7 @@ func _clear_content() -> void:
     for child in content.get_children():
         child.queue_free()
     timer_label = null
+    puzzle_finished = false
 
 func _label(text: String, size: int = 18) -> Label:
     var label := Label.new()
@@ -157,12 +159,12 @@ func _show_puzzle() -> void:
 
 func _render_puzzle(puzzle: PuzzleDefinition, progress_text: String) -> void:
     active_puzzle = puzzle
-    session.start(active_puzzle)
+    session.start(active_puzzle, DifficultyManager.time_limit(active_puzzle.difficulty))
     events.record(EventTracker.LEVEL_STARTED, {"level": current_index + 1, "puzzle_id": active_puzzle.id, "difficulty": active_puzzle.difficulty, "daily": daily_mode})
     content.add_child(_label("MINDSHIFT", 32))
     content.add_child(_label(progress_text + "   •   ❤️ %d" % lives.lives, 17))
     content.add_child(_label("%s  •  QIYINLIK %d" % [active_puzzle.category.to_upper(), active_puzzle.difficulty], 15))
-    timer_label = _label("⏱ %ds" % _effective_time_limit(), 17)
+    timer_label = _label("⏱ %ds" % int(session.time_limit_seconds), 17)
     content.add_child(timer_label)
     var question := _label(active_puzzle.prompt, 25)
     question.custom_minimum_size = Vector2(0, 180)
@@ -198,11 +200,13 @@ func _build_button_answers(feedback: Label, hint: Label) -> void:
         content.add_child(_button(value_text, func(): _submit_answer(value_text, null, feedback, hint), 64))
 
 func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label) -> void:
-    if active_puzzle == null or session.state != GameSession.STATE_ACTIVE:
+    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE:
         return
     var correct := session.submit(value)
     events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": correct, "attempt": session.attempts, "daily": daily_mode})
     if correct:
+        puzzle_finished = true
+        timer_tick.stop()
         var result := progression.record_attempt(active_puzzle, true, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
         feedback.text = "✓ TO‘G‘RI!  %d ⭐  +%d" % [result.stars, result.score]
         if input != null:
@@ -212,7 +216,7 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
             feedback.text += "  🏆"
         _save()
         if daily_mode:
-            _finish_daily_puzzle(feedback)
+            content.add_child(_button("KEYINGISI", _show_daily_puzzle, 68))
         else:
             content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
     else:
@@ -221,6 +225,8 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
         feedback.text = "Hali emas. ❤️ -1. Yana bir bor o‘ylab ko‘ring."
         _save()
         if lives.is_empty():
+            puzzle_finished = true
+            timer_tick.stop()
             content.add_child(_button("JONLAR TUGADI", _show_lives_empty, 68))
 
 func _next_level() -> void:
@@ -261,17 +267,13 @@ func _show_daily_puzzle() -> void:
     var p: PuzzleDefinition = daily_puzzles[daily_position] if daily_puzzles[daily_position] is PuzzleDefinition else PuzzleDefinition.from_dict(daily_puzzles[daily_position])
     _render_puzzle(p, "Daily %d / %d" % [daily_position + 1, daily_puzzles.size()])
 
-func _finish_daily_puzzle(feedback: Label) -> void:
-    daily_position += 1
-    content.add_child(_button("KEYINGISI", _show_daily_puzzle, 68))
-
 func _complete_daily() -> void:
     daily.mark_completed()
     daily_mode = false
     _save()
     _clear_content()
     content.add_child(_label("🔥 DAILY CHALLENGE TUGADI!", 30))
-    content.add_child(_label("Bugungi 3 ta puzzle muvaffaqiyatli bajarildi.", 20))
+    content.add_child(_label("Bugungi %d ta puzzle muvaffaqiyatli bajarildi." % daily_puzzles.size(), 20))
     content.add_child(_label("Sizning fikrlash ritmingiz kuchaymoqda! 🧠", 18))
     content.add_child(_button("BOSH MENYU", _show_home, 68))
 
@@ -290,30 +292,26 @@ func _show_daily() -> void:
         content.add_child(_button("BOSHLASH", _start_daily, 68))
     content.add_child(_button("ORTGA", _show_home))
 
-func _effective_time_limit() -> int:
-    if active_puzzle == null:
-        return 0
-    if active_puzzle.time_limit_seconds > 0.0:
-        return int(active_puzzle.time_limit_seconds)
-    return DifficultyManager.time_limit(active_puzzle.difficulty)
-
 func _on_timer_tick() -> void:
-    if active_puzzle == null or session.state != GameSession.STATE_ACTIVE or timer_label == null:
+    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE or timer_label == null:
         return
-    var limit := _effective_time_limit()
-    if limit <= 0:
-        timer_label.text = "⏱ ∞"
+    if session.check_timeout():
+        _handle_timeout()
         return
-    var remaining := maxi(0, limit - int(session.get_elapsed_seconds()))
+    var remaining := maxi(0, int(ceil(session.get_remaining_seconds())))
     timer_label.text = "⏱ %ds" % remaining
-    if remaining <= 0:
-        session.timeout()
-        progression.record_attempt(active_puzzle, false, float(limit), session.attempts + 1, session.hints_used > 0)
-        lives.lose_life()
-        events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": false, "timeout": true, "daily": daily_mode})
-        _save()
-        timer_tick.stop()
-        _show_timeout()
+
+func _handle_timeout() -> void:
+    if puzzle_finished:
+        return
+    puzzle_finished = true
+    timer_tick.stop()
+    var elapsed := session.get_elapsed_seconds()
+    progression.record_attempt(active_puzzle, false, elapsed, session.attempts, session.hints_used > 0)
+    lives.lose_life()
+    events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": false, "timeout": true, "daily": daily_mode})
+    _save()
+    _show_timeout()
 
 func _show_timeout() -> void:
     _clear_content()
