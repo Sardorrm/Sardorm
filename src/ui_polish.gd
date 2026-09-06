@@ -6,6 +6,10 @@ const LEVEL_BUTTON_SIZE := Vector2(76, 64)
 const HAPTIC_MS := 18
 var pulse_time := 0.0
 var styled_nodes: Dictionary = {}
+var haptics_enabled := true
+
+func set_haptics_enabled(enabled: bool) -> void:
+    haptics_enabled = enabled
 
 func _process(delta: float) -> void:
     pulse_time += delta
@@ -19,12 +23,10 @@ func _polish_tree(node: Node) -> void:
     if not styled_nodes.has(node_id):
         _apply_static_polish(node)
         styled_nodes[node_id] = true
-
     if node is Label and node.text.begins_with("⏱"):
         _polish_timer(node)
     elif node is Label and (node.text.begins_with("✓ TO‘G‘RI") or node.text.begins_with("Hali emas") or node.text.begins_with("⏱ VAQT TUGADI")):
         _polish_feedback(node)
-
     for child in node.get_children():
         _polish_tree(child)
 
@@ -40,7 +42,6 @@ func _polish_button(button: Button) -> void:
     button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
     if not button.pressed.is_connected(_on_button_pressed):
         button.pressed.connect(_on_button_pressed)
-
     if button.get_parent() is GridContainer:
         _polish_level_button(button)
     elif button.text == "TEKSHIRISH" or button.text == "KEYINGI DARAJA" or button.text == "KEYINGISI":
@@ -59,7 +60,7 @@ func _polish_level_button(button: Button) -> void:
         button.tooltip_text = "Daraja %d" % level
 
 func _on_button_pressed() -> void:
-    if OS.has_feature("android") or OS.has_feature("ios"):
+    if haptics_enabled and (OS.has_feature("android") or OS.has_feature("ios")):
         Input.vibrate_handheld(HAPTIC_MS, 0.25)
 
 func _polish_timer(label: Label) -> void:
