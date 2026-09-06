@@ -16,9 +16,18 @@ jobs:
           test -f project.godot
           test -f src/main.gd
           test -f src/puzzle_engine.gd
+          test -f src/puzzle_definition.gd
+          test -f src/puzzle_repository.gd
           test -f src/level_manager.gd
           test -f src/save_manager.gd
           test -f src/stats_manager.gd
+          test -f src/game_session.gd
+          test -f src/game_rules.gd
+          test -f src/difficulty_manager.gd
+          test -f src/achievement_manager.gd
+          test -f src/event_tracker.gd
+          test -f src/puzzle_result.gd
+          test -f src/progression_service.gd
           test -f src/MainScene.tscn
           python3 -m json.tool data/puzzles.json >/dev/null
           python3 - <<'PY'
