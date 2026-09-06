@@ -14,6 +14,11 @@ var current_index := 0
 var active_puzzle: PuzzleDefinition
 var root_ui: Control
 var content: VBoxContainer
+var daily_mode := false
+var daily_position := 0
+var daily_puzzles: Array = []
+var timer_label: Label
+var timer_tick: Timer
 
 func _ready() -> void:
     if not engine.load_from_file("res://data/puzzles.json"):
@@ -32,6 +37,10 @@ func _ready() -> void:
     lives.load_from_dict(save_data.get("lives", {}))
     current_index = level_manager.get_current_level()
     events.record(EventTracker.APP_STARTED, {"puzzle_count": engine.puzzles.size()})
+    timer_tick = Timer.new()
+    timer_tick.wait_time = 0.25
+    timer_tick.timeout.connect(_on_timer_tick)
+    add_child(timer_tick)
     _build_shell()
     _show_home()
 
@@ -55,8 +64,10 @@ func _build_shell() -> void:
     margin.add_child(content)
 
 func _clear_content() -> void:
+    timer_tick.stop()
     for child in content.get_children():
         child.queue_free()
+    timer_label = null
 
 func _label(text: String, size: int = 18) -> Label:
     var label := Label.new()
@@ -75,6 +86,7 @@ func _button(text: String, callback: Callable, height: int = 62) -> Button:
     return button
 
 func _show_home() -> void:
+    daily_mode = false
     _clear_content()
     lives.recover()
     content.add_child(_label("MindShift", 44))
@@ -82,7 +94,7 @@ func _show_home() -> void:
     content.add_child(_label("Progress: %d / %d   •   ❤️ %d/%d" % [level_manager.get_progress_count(), engine.puzzles.size(), lives.lives, LifeManager.MAX_LIVES], 18))
     content.add_child(_label("🧠 %s" % str(stats.get_profile().name), 17))
     content.add_child(_button("DAVOM ETISH", _continue_game, 70))
-    content.add_child(_button("BUGUNGI CHALLENGE", _show_daily))
+    content.add_child(_button("BUGUNGI CHALLENGE", _start_daily))
     content.add_child(_button("DARAJALAR", _show_levels))
     content.add_child(_button("STATISTIKA", _show_stats))
     content.add_child(_button("SOZLAMALAR", _show_settings))
@@ -102,6 +114,7 @@ func _show_lives_empty() -> void:
     content.add_child(_button("ORTGA", _show_home))
 
 func _show_levels() -> void:
+    daily_mode = false
     _clear_content()
     content.add_child(_label("Darajalar", 34))
     content.add_child(_label("Yechilgan: %d / %d" % [level_manager.get_progress_count(), engine.puzzles.size()]))
@@ -140,12 +153,17 @@ func _show_puzzle() -> void:
         content.add_child(_label("Barcha darajalar tugadi!", 28))
         content.add_child(_button("BOSHLASH MENYUSI", _show_home))
         return
-    active_puzzle = PuzzleDefinition.from_dict(raw_puzzle)
+    _render_puzzle(PuzzleDefinition.from_dict(raw_puzzle), "Daraja %d / %d" % [current_index + 1, engine.puzzles.size()])
+
+func _render_puzzle(puzzle: PuzzleDefinition, progress_text: String) -> void:
+    active_puzzle = puzzle
     session.start(active_puzzle)
-    events.record(EventTracker.LEVEL_STARTED, {"level": current_index + 1, "puzzle_id": active_puzzle.id, "difficulty": active_puzzle.difficulty})
+    events.record(EventTracker.LEVEL_STARTED, {"level": current_index + 1, "puzzle_id": active_puzzle.id, "difficulty": active_puzzle.difficulty, "daily": daily_mode})
     content.add_child(_label("MINDSHIFT", 32))
-    content.add_child(_label("Daraja %d / %d   •   ❤️ %d" % [current_index + 1, engine.puzzles.size(), lives.lives], 17))
+    content.add_child(_label(progress_text + "   •   ❤️ %d" % lives.lives, 17))
     content.add_child(_label("%s  •  QIYINLIK %d" % [active_puzzle.category.to_upper(), active_puzzle.difficulty], 15))
+    timer_label = _label("⏱ %ds" % _effective_time_limit(), 17)
+    content.add_child(timer_label)
     var question := _label(active_puzzle.prompt, 25)
     question.custom_minimum_size = Vector2(0, 180)
     content.add_child(question)
@@ -158,7 +176,8 @@ func _show_puzzle() -> void:
     else:
         _build_text_answer(feedback, hint)
     content.add_child(_button("HINT", func(): _use_hint(hint), 54))
-    content.add_child(_button("DARAJALAR", _show_levels, 54))
+    content.add_child(_button("DARAJALAR" if not daily_mode else "CHALLENGE", _show_levels if not daily_mode else _show_daily, 54))
+    timer_tick.start()
 
 func _build_text_answer(feedback: Label, hint: Label) -> void:
     var answer := LineEdit.new()
@@ -182,7 +201,7 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
     if active_puzzle == null or session.state != GameSession.STATE_ACTIVE:
         return
     var correct := session.submit(value)
-    events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": correct, "attempt": session.attempts})
+    events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": correct, "attempt": session.attempts, "daily": daily_mode})
     if correct:
         var result := progression.record_attempt(active_puzzle, true, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
         feedback.text = "✓ TO‘G‘RI!  %d ⭐  +%d" % [result.stars, result.score]
@@ -192,7 +211,10 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
         if not result.newly_unlocked.is_empty():
             feedback.text += "  🏆"
         _save()
-        content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
+        if daily_mode:
+            _finish_daily_puzzle(feedback)
+        else:
+            content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
     else:
         progression.record_attempt(active_puzzle, false, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0)
         lives.lose_life()
@@ -219,7 +241,42 @@ func _use_hint(hint: Label) -> void:
     else:
         hint.text = "Bu daraja uchun hint ishlatilgan."
 
+func _start_daily() -> void:
+    if lives.is_empty():
+        _show_lives_empty()
+        return
+    daily_mode = true
+    daily_puzzles = daily.get_puzzles()
+    daily_position = 0
+    if daily_puzzles.is_empty():
+        _show_daily()
+        return
+    _show_daily_puzzle()
+
+func _show_daily_puzzle() -> void:
+    if daily_position >= daily_puzzles.size():
+        _complete_daily()
+        return
+    _clear_content()
+    var p: PuzzleDefinition = daily_puzzles[daily_position] if daily_puzzles[daily_position] is PuzzleDefinition else PuzzleDefinition.from_dict(daily_puzzles[daily_position])
+    _render_puzzle(p, "Daily %d / %d" % [daily_position + 1, daily_puzzles.size()])
+
+func _finish_daily_puzzle(feedback: Label) -> void:
+    daily_position += 1
+    content.add_child(_button("KEYINGISI", _show_daily_puzzle, 68))
+
+func _complete_daily() -> void:
+    daily.mark_completed()
+    daily_mode = false
+    _save()
+    _clear_content()
+    content.add_child(_label("🔥 DAILY CHALLENGE TUGADI!", 30))
+    content.add_child(_label("Bugungi 3 ta puzzle muvaffaqiyatli bajarildi.", 20))
+    content.add_child(_label("Sizning fikrlash ritmingiz kuchaymoqda! 🧠", 18))
+    content.add_child(_button("BOSH MENYU", _show_home, 68))
+
 func _show_daily() -> void:
+    daily_mode = false
     _clear_content()
     var puzzles := daily.get_puzzles()
     content.add_child(_label("BUGUNGI CHALLENGE", 32))
@@ -230,7 +287,46 @@ func _show_daily() -> void:
         for i in range(puzzles.size()):
             var p: PuzzleDefinition = puzzles[i] if puzzles[i] is PuzzleDefinition else PuzzleDefinition.from_dict(puzzles[i])
             content.add_child(_label("%d. %s" % [i + 1, p.prompt], 17))
+        content.add_child(_button("BOSHLASH", _start_daily, 68))
     content.add_child(_button("ORTGA", _show_home))
+
+func _effective_time_limit() -> int:
+    if active_puzzle == null:
+        return 0
+    if active_puzzle.time_limit_seconds > 0.0:
+        return int(active_puzzle.time_limit_seconds)
+    return DifficultyManager.time_limit(active_puzzle.difficulty)
+
+func _on_timer_tick() -> void:
+    if active_puzzle == null or session.state != GameSession.STATE_ACTIVE or timer_label == null:
+        return
+    var limit := _effective_time_limit()
+    if limit <= 0:
+        timer_label.text = "⏱ ∞"
+        return
+    var remaining := maxi(0, limit - int(session.get_elapsed_seconds()))
+    timer_label.text = "⏱ %ds" % remaining
+    if remaining <= 0:
+        session.timeout()
+        progression.record_attempt(active_puzzle, false, float(limit), session.attempts + 1, session.hints_used > 0)
+        lives.lose_life()
+        events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": false, "timeout": true, "daily": daily_mode})
+        _save()
+        timer_tick.stop()
+        _show_timeout()
+
+func _show_timeout() -> void:
+    _clear_content()
+    content.add_child(_label("⏱ VAQT TUGADI", 34))
+    content.add_child(_label("Bu safar ulgurmadingiz. ❤️ -1", 20))
+    content.add_child(_label("Javobni tushunib olish ham g‘alabaning bir qismi.", 17))
+    if lives.is_empty():
+        content.add_child(_button("JONLAR TUGADI", _show_lives_empty, 68))
+    elif daily_mode:
+        daily_position += 1
+        content.add_child(_button("DAILY DAVOM ETISH", _show_daily_puzzle, 68))
+    else:
+        content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
 
 func _show_stats() -> void:
     _clear_content()
