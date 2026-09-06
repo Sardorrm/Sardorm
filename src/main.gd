@@ -20,6 +20,7 @@ var daily_position := 0
 var daily_puzzles: Array = []
 var timer_label: Label
 var timer_tick: Timer
+var pause_button: Button
 var puzzle_finished := false
 
 func _ready() -> void:
@@ -71,6 +72,7 @@ func _clear_content() -> void:
     for child in content.get_children():
         child.queue_free()
     timer_label = null
+    pause_button = null
     puzzle_finished = false
 
 func _label(text: String, size: int = 18) -> Label:
@@ -183,6 +185,8 @@ func _render_puzzle(puzzle: PuzzleDefinition, progress_text: String) -> void:
     else:
         _build_text_answer(feedback, hint)
     content.add_child(_button("HINT", func(): _use_hint(hint), 54))
+    pause_button = _button("⏸ PAUZA", _toggle_pause, 54)
+    content.add_child(pause_button)
     content.add_child(_button("DARAJALAR" if not daily_mode else "CHALLENGE", _show_levels if not daily_mode else _show_daily, 54))
     timer_tick.start()
 
@@ -204,8 +208,20 @@ func _build_button_answers(feedback: Label, hint: Label) -> void:
         var value_text := str(value)
         content.add_child(_button(value_text, func(): _submit_answer(value_text, null, feedback, hint), 64))
 
+func _toggle_pause() -> void:
+    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE or pause_button == null:
+        return
+    if session.paused:
+        session.resume()
+        timer_tick.start()
+        pause_button.text = "⏸ PAUZA"
+    else:
+        session.pause()
+        timer_tick.stop()
+        pause_button.text = "▶ DAVOM ETISH"
+
 func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label) -> void:
-    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE:
+    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE or session.paused:
         return
     var correct := session.submit(value)
     events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": correct, "attempt": session.attempts, "daily": daily_mode})
@@ -250,7 +266,7 @@ func _next_level() -> void:
         _show_levels()
 
 func _use_hint(hint: Label) -> void:
-    if active_puzzle == null:
+    if active_puzzle == null or session.paused:
         return
     if session.use_hint():
         progression.record_hint(active_puzzle)
@@ -312,7 +328,7 @@ func _show_daily() -> void:
     content.add_child(_button("ORTGA", _show_home))
 
 func _on_timer_tick() -> void:
-    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE or timer_label == null:
+    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE or session.paused or timer_label == null:
         return
     if session.check_timeout():
         _handle_timeout()
