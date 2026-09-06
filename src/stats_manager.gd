@@ -6,6 +6,7 @@ var failed := 0
 var hints := 0
 var total_time_seconds := 0.0
 var solved_time_seconds := 0.0
+var attempt_counted_time_seconds := 0.0
 var category_stats: Dictionary = {}
 
 func load_from_dict(data: Dictionary) -> void:
@@ -13,7 +14,8 @@ func load_from_dict(data: Dictionary) -> void:
     failed = max(0, int(data.get("failed", 0)))
     hints = max(0, int(data.get("hints", data.get("hints_used", 0))))
     total_time_seconds = max(0.0, float(data.get("total_time_seconds", 0.0)))
-    solved_time_seconds = max(0.0, float(data.get("solved_time_seconds", total_time_seconds)))
+    solved_time_seconds = max(0.0, float(data.get("solved_time_seconds", 0.0)))
+    attempt_counted_time_seconds = max(0.0, float(data.get("attempt_counted_time_seconds", total_time_seconds)))
     var categories = data.get("category_stats", {})
     category_stats = categories.duplicate(true) if typeof(categories) == TYPE_DICTIONARY else {}
 
@@ -22,12 +24,15 @@ func record_solved(seconds: float, category: String = "") -> void:
     solved += 1
     total_time_seconds += elapsed
     solved_time_seconds += elapsed
+    attempt_counted_time_seconds += elapsed
     _record_category(category, true, elapsed)
 
 func record_failed(category: String = "", seconds: float = 0.0) -> void:
+    var elapsed := max(seconds, 0.0)
     failed += 1
-    total_time_seconds += max(seconds, 0.0)
-    _record_category(category, false, 0.0)
+    total_time_seconds += elapsed
+    attempt_counted_time_seconds += elapsed
+    _record_category(category, false, elapsed)
 
 func record_hint(category: String = "") -> void:
     hints += 1
@@ -50,7 +55,8 @@ func get_accuracy() -> float:
     return 0.0 if attempts == 0 else float(solved) / float(attempts) * 100.0
 
 func get_average_time() -> float:
-    return 0.0 if solved == 0 else solved_time_seconds / float(solved)
+    var attempts := solved + failed
+    return 0.0 if attempts == 0 else attempt_counted_time_seconds / float(attempts)
 
 func get_profile() -> Dictionary:
     if solved + failed == 0:
@@ -68,4 +74,12 @@ func get_profile() -> Dictionary:
     return {"name": name, "score": score}
 
 func to_dict() -> Dictionary:
-    return {"solved": solved, "failed": failed, "hints": hints, "total_time_seconds": total_time_seconds, "solved_time_seconds": solved_time_seconds, "category_stats": category_stats.duplicate(true)}
+    return {
+        "solved": solved,
+        "failed": failed,
+        "hints": hints,
+        "total_time_seconds": total_time_seconds,
+        "solved_time_seconds": solved_time_seconds,
+        "attempt_counted_time_seconds": attempt_counted_time_seconds,
+        "category_stats": category_stats.duplicate(true)
+    }
