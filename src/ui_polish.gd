@@ -22,6 +22,8 @@ func _polish_tree(node: Node) -> void:
 
     if node is Label and node.text.begins_with("⏱"):
         _polish_timer(node)
+    elif node is Label and (node.text.begins_with("✓ TO‘G‘RI") or node.text.begins_with("Hali emas") or node.text.begins_with("⏱ VAQT TUGADI")):
+        _polish_feedback(node)
 
     for child in node.get_children():
         _polish_tree(child)
@@ -72,6 +74,10 @@ func _polish_timer(label: Label) -> void:
     else:
         label.scale = Vector2.ONE
         label.remove_theme_color_override("font_color")
+
+func _polish_feedback(label: Label) -> void:
+    label.custom_minimum_size.y = maxf(label.custom_minimum_size.y, 62.0)
+    label.add_theme_font_size_override("font_size", 20)
 
 func _extract_timer_seconds(text: String) -> int:
     var cleaned := text.replace("⏱", "").replace("s", "").strip_edges()
