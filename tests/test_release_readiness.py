@@ -58,6 +58,18 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("session.resume()", code)
         self.assertIn("or session.paused", code)
 
+    def test_android_back_navigation_contract(self):
+        code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        self.assertIn("func _unhandled_input(event: InputEvent)", code)
+        self.assertIn("key_event.keycode != KEY_ESCAPE", code)
+        self.assertIn("_toggle_pause()", code)
+        self.assertIn("get_viewport().set_input_as_handled()", code)
+
+    def test_mobile_level_grid_contract(self):
+        code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        self.assertIn("grid.columns = 3", code)
+        self.assertIn("level_button.tooltip_text", code)
+
     def test_android_release_plan_exists(self):
         plan = ROOT / "docs" / "ANDROID_RELEASE.md"
         self.assertTrue(plan.exists())
