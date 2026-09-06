@@ -86,6 +86,7 @@ func _button(text: String, callback: Callable, height: int = 62) -> Button:
     button.text = text
     button.custom_minimum_size = Vector2(0, height)
     button.add_theme_font_size_override("font_size", 20)
+    button.focus_mode = Control.FOCUS_ALL
     button.pressed.connect(callback)
     return button
 
@@ -112,6 +113,7 @@ func _continue_game() -> void:
     _show_puzzle()
 
 func _show_lives_empty() -> void:
+    daily_mode = false
     _clear_content()
     var seconds := lives.seconds_to_next_life()
     content.add_child(_label("❤️ Jonlar tugadi", 32))
@@ -302,7 +304,7 @@ func _show_daily() -> void:
     else:
         for i in range(puzzles.size()):
             var p: PuzzleDefinition = puzzles[i] if puzzles[i] is PuzzleDefinition else PuzzleDefinition.from_dict(puzzles[i])
-            var marker := "✓" if i < daily.current_position and daily.is_session_completed() else ""
+            var marker := "✓" if i < daily.current_position else ""
             content.add_child(_label("%d. %s %s" % [i + 1, p.prompt, marker], 17))
         content.add_child(_button("DAVOM ETISH", _start_daily, 68))
     content.add_child(_button("ORTGA", _show_home))
