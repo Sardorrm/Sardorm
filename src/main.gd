@@ -212,15 +212,17 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
     if correct:
         puzzle_finished = true
         timer_tick.stop()
+        var elapsed_seconds := int(round(session.get_elapsed_seconds()))
         var result := progression.record_attempt(active_puzzle, true, session.get_elapsed_seconds(), session.attempts, session.hints_used > 0, not daily_mode)
         var reward_multiplier := streak.get_multiplier() if daily_mode else 1.0
         result.score = int(round(float(result.score) * reward_multiplier))
-        feedback.text = "✓ TO‘G‘RI!  %d ⭐  +%d" % [result.stars, result.score]
+        var multiplier_text := " • 🔥 x%.1f" % reward_multiplier if daily_mode and reward_multiplier > 1.0 else ""
+        feedback.text = "✓ TO‘G‘RI!\n%d ⭐  •  +%d BALL%s\n⏱ %ds" % [result.stars, result.score, multiplier_text, elapsed_seconds]
         if input != null:
             input.editable = false
         hint.text = "🧠 " + active_puzzle.explanation if active_puzzle.has_explanation() else ""
         if not result.newly_unlocked.is_empty():
-            feedback.text += "  🏆"
+            feedback.text += "\n🏆 Yangi daraja ochildi!"
         if daily_mode:
             daily.record_solved()
         _save()
