@@ -2,6 +2,7 @@ class_name PuzzleEngine
 extends RefCounted
 
 const EXTRA_PATH_SUFFIX := "_extra.json"
+const ALLOWED_ANSWER_TYPES := ["text", "number", "choice", "true_false"]
 
 var puzzles: Array = []
 var last_error: String = ""
@@ -40,7 +41,7 @@ func _read_puzzles(path: String, target: Array) -> bool:
         if typeof(puzzle) != TYPE_DICTIONARY:
             last_error = "Puzzle is not an object"
             return false
-        for field in ["id", "category", "difficulty", "prompt", "answer", "hint"]:
+        for field in ["id", "category", "difficulty", "prompt", "answer", "hint", "explanation"]:
             if not puzzle.has(field):
                 last_error = "Missing field: " + field
                 return false
@@ -58,9 +59,38 @@ func _read_puzzles(path: String, target: Array) -> bool:
         if str(puzzle["hint"]).strip_edges().is_empty():
             last_error = "Empty hint for " + id
             return false
+        if str(puzzle["explanation"]).strip_edges().is_empty():
+            last_error = "Empty explanation for " + id
+            return false
         if puzzle.has("answers") and typeof(puzzle["answers"]) == TYPE_ARRAY and puzzle["answers"].is_empty():
             last_error = "answers cannot be empty for " + id
             return false
+        var answer_type := str(puzzle.get("answer_type", "number" if (puzzle["answer"] is int or puzzle["answer"] is float) else "text"))
+        if not ALLOWED_ANSWER_TYPES.has(answer_type):
+            last_error = "Invalid answer_type for " + id + ": " + answer_type
+            return false
+        if answer_type == "true_false":
+            if not puzzle.has("answers") or typeof(puzzle["answers"]) != TYPE_ARRAY or puzzle["answers"].size() != 2:
+                last_error = "true_false requires exactly two answers for " + id
+                return false
+        if answer_type == "choice":
+            if not puzzle.has("answers") or typeof(puzzle["answers"]) != TYPE_ARRAY or puzzle["answers"].size() < 2:
+                last_error = "choice requires at least two answers for " + id
+                return false
+        if puzzle.has("answers") and typeof(puzzle["answers"]) == TYPE_ARRAY:
+            var normalized_answers: Array = []
+            for candidate in puzzle["answers"]:
+                var normalized := str(candidate).strip_edges().to_lower()
+                if normalized.is_empty():
+                    last_error = "answers cannot contain empty values for " + id
+                    return false
+                if normalized_answers.has(normalized):
+                    last_error = "Duplicate accepted answer for " + id
+                    return false
+                normalized_answers.append(normalized)
+            if not normalized_answers.has(str(puzzle["answer"]).strip_edges().to_lower()):
+                last_error = "answer must be included in answers for " + id
+                return false
         target.append(puzzle)
     return true
 
