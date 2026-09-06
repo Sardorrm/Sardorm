@@ -21,7 +21,7 @@ var last_answer: String = ""
 var time_limit_seconds := 0.0
 var timeout_recorded := false
 
-func start(new_puzzle: PuzzleDefinition) -> bool:
+func start(new_puzzle: PuzzleDefinition, fallback_time_limit: float = 0.0) -> bool:
     if new_puzzle == null:
         reset()
         return false
@@ -31,6 +31,8 @@ func start(new_puzzle: PuzzleDefinition) -> bool:
     hints_used = 0
     last_answer = ""
     time_limit_seconds = max(0.0, new_puzzle.time_limit_seconds)
+    if time_limit_seconds <= 0.0:
+        time_limit_seconds = max(0.0, fallback_time_limit)
     timeout_recorded = false
     _set_state(STATE_ACTIVE)
     return true
@@ -53,6 +55,14 @@ func submit(answer: String) -> bool:
     answer_evaluated.emit(correct, elapsed)
     return correct
 
+func timeout() -> bool:
+    if state != STATE_ACTIVE or timeout_recorded:
+        return false
+    timeout_recorded = true
+    _set_state(STATE_TIMEOUT)
+    timed_out.emit(get_elapsed_seconds())
+    return true
+
 func use_hint() -> bool:
     if state != STATE_ACTIVE or puzzle == null or hints_used > 0:
         return false
@@ -62,13 +72,9 @@ func use_hint() -> bool:
 func check_timeout() -> bool:
     if state != STATE_ACTIVE or time_limit_seconds <= 0.0 or timeout_recorded:
         return false
-    var elapsed := get_elapsed_seconds()
-    if elapsed < time_limit_seconds:
+    if get_elapsed_seconds() < time_limit_seconds:
         return false
-    timeout_recorded = true
-    _set_state(STATE_TIMEOUT)
-    timed_out.emit(elapsed)
-    return true
+    return timeout()
 
 func get_elapsed_seconds() -> float:
     if started_at_msec <= 0:
@@ -81,7 +87,7 @@ func get_remaining_seconds() -> float:
     return max(0.0, time_limit_seconds - get_elapsed_seconds())
 
 func get_failed_attempts() -> int:
-    return max(0, attempts - (1 if state == STATE_SOLVED else 0))
+    return attempts if state != STATE_SOLVED else max(0, attempts - 1)
 
 func is_complete() -> bool:
     return state == STATE_SOLVED or state == STATE_TIMEOUT
@@ -97,6 +103,8 @@ func reset() -> void:
     _set_state(STATE_IDLE)
 
 func _matches_answer(value: String) -> bool:
+    if puzzle == null:
+        return false
     for expected in puzzle.get_answers():
         if expected is int or expected is float:
             var parsed := value.strip_edges().to_float()
