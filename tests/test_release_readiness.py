@@ -58,6 +58,13 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("session.resume()", code)
         self.assertIn("or session.paused", code)
 
+    def test_android_release_plan_exists(self):
+        plan = ROOT / "docs" / "ANDROID_RELEASE.md"
+        self.assertTrue(plan.exists())
+        text = plan.read_text(encoding="utf-8")
+        for token in ["safe areas", "Pause a puzzle", "release build", "signing"]:
+            self.assertIn(token, text)
+
 
 if __name__ == "__main__":
     unittest.main()
