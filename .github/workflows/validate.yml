@@ -1,0 +1,28 @@
+name: Validate MindShift
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-puzzles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate puzzle JSON
+        run: python -m json.tool data/puzzles.json > /dev/null
+      - name: Check required puzzle fields
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('data/puzzles.json').read_text())
+          puzzles = data['puzzles']
+          assert len(puzzles) >= 10
+          required = {'id', 'category', 'difficulty', 'prompt', 'answer', 'hint'}
+          for puzzle in puzzles:
+              assert required <= puzzle.keys(), puzzle
+          ids = [p['id'] for p in puzzles]
+          assert len(ids) == len(set(ids)), 'Duplicate puzzle IDs'
+          print(f'Validated {len(puzzles)} puzzles')
+          PY
