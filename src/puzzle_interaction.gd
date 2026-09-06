@@ -22,8 +22,17 @@ static func choices(puzzle: PuzzleDefinition) -> Array:
 static func validate_selection(puzzle: PuzzleDefinition, value: String) -> bool:
     if puzzle == null:
         return false
-    var selected := value.strip_edges()
+    var selected := _normalize_selection(puzzle, value)
     for expected in puzzle.get_answers():
-        if str(expected).strip_edges().to_lower() == selected.to_lower():
+        if _normalize_selection(puzzle, str(expected)) == selected:
             return true
     return false
+
+static func _normalize_selection(puzzle: PuzzleDefinition, value: String) -> String:
+    var selected := value.strip_edges().to_lower()
+    if input_type(puzzle) == TYPE_TRUE_FALSE:
+        if selected in ["to‘g‘ri", "to'g'ri", "togri", "true", "1"]:
+            return "true"
+        if selected in ["noto‘g‘ri", "noto'g'ri", "notogri", "false", "0"]:
+            return "false"
+    return selected
