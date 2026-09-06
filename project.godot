@@ -10,8 +10,6 @@ config/features=PackedStringArray("4.3", "GL Compatibility")
 [autoload]
 MindShiftUIPolish="*res://src/ui_polish.gd"
 
-[display]
-
 [display/window]
 size/viewport_width=720
 size/viewport_height=1280
