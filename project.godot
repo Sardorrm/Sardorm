@@ -6,6 +6,9 @@ config/name="MindShift"
 run/main_scene="res://src/MainScene.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 
+[autoload]
+MindShiftUIPolish="*res://src/ui_polish.gd"
+
 [display]
 
 [display/window]
