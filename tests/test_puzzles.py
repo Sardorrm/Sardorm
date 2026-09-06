@@ -78,6 +78,18 @@ class PuzzleIntegrityTests(unittest.TestCase):
         self.assertTrue((ROOT / "data/puzzles_extra.json").exists())
         self.assertFalse((ROOT / "data/puzzles.extra.json").exists())
 
+    def test_runtime_validation_is_strict(self):
+        code = (ROOT / "src/puzzle_engine.gd").read_text(encoding="utf-8")
+        for token in [
+            'const ALLOWED_ANSWER_TYPES',
+            '"explanation"',
+            'Invalid answer_type',
+            'answer must be included in answers',
+            'Duplicate accepted answer',
+            'answers cannot contain empty values',
+        ]:
+            self.assertIn(token, code)
+
     def test_difficulty_distribution_is_not_flat(self):
         self.assertEqual({p["difficulty"] for p in PUZZLES}, {1, 2, 3, 4, 5})
         self.assertGreaterEqual(sum(p["difficulty"] == 5 for p in PUZZLES), 10)
