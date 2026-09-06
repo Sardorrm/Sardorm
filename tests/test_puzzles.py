@@ -13,7 +13,7 @@ ALLOWED_ANSWER_TYPES = {"text", "number", "choice", "true_false"}
 class PuzzleIntegrityTests(unittest.TestCase):
     def test_puzzle_schema_and_ids(self):
         self.assertIsInstance(PUZZLES, list)
-        self.assertGreaterEqual(len(PUZZLES), 10)
+        self.assertGreaterEqual(len(PUZZLES), 35)
         ids, prompts = [], []
         for puzzle in PUZZLES:
             self.assertTrue(REQUIRED.issubset(puzzle), puzzle)
@@ -55,27 +55,30 @@ class PuzzleIntegrityTests(unittest.TestCase):
 
     def test_answer_type_distribution_is_not_flat(self):
         types = {p.get("answer_type", "number" if isinstance(p["answer"], (int, float)) else "text") for p in PUZZLES}
-        self.assertTrue({"number", "text"}.issubset(types))
+        self.assertTrue({"number", "text", "choice", "true_false"}.issubset(types))
 
     def test_runtime_architecture_files_exist(self):
         for path in [
             ROOT / "src/puzzle_engine.gd", ROOT / "src/puzzle_definition.gd",
             ROOT / "src/puzzle_repository.gd", ROOT / "src/game_session.gd",
             ROOT / "src/puzzle_result.gd", ROOT / "src/progression_service.gd",
-            ROOT / "src/daily_challenge.gd", ROOT / "src/puzzle_interaction.gd",
-            ROOT / "src/answer_input_factory.gd", ROOT / "src/level_manager.gd",
-            ROOT / "src/save_manager.gd", ROOT / "src/stats_manager.gd",
-            ROOT / "src/event_tracker.gd", ROOT / "src/achievement_manager.gd",
-            ROOT / "src/game_rules.gd", ROOT / "src/difficulty_manager.gd",
-            ROOT / "src/main.gd",
+            ROOT / "src/daily_challenge.gd", ROOT / "src/daily_challenge_service.gd",
+            ROOT / "src/puzzle_interaction.gd", ROOT / "src/answer_input_factory.gd",
+            ROOT / "src/level_manager.gd", ROOT / "src/save_manager.gd",
+            ROOT / "src/stats_manager.gd", ROOT / "src/life_manager.gd",
+            ROOT / "src/streak_manager.gd", ROOT / "src/event_tracker.gd",
+            ROOT / "src/achievement_manager.gd", ROOT / "src/game_rules.gd",
+            ROOT / "src/difficulty_manager.gd", ROOT / "src/main.gd",
         ]:
             self.assertTrue(path.exists(), path)
 
-    def test_daily_challenge_is_deterministic(self):
+    def test_daily_challenge_contract(self):
         code = (ROOT / "src/daily_challenge.gd").read_text(encoding="utf-8")
-        self.assertIn("class_name DailyChallenge", code)
-        self.assertIn("select_indices", code)
-        self.assertIn("seed_for_date", code)
+        service = (ROOT / "src/daily_challenge_service.gd").read_text(encoding="utf-8")
+        for token in ["class_name DailyChallenge", "select_indices", "seed_for_date"]:
+            self.assertIn(token, code)
+        for token in ["current_position", "record_solved", "record_failed", "is_session_completed"]:
+            self.assertIn(token, service)
 
     def test_interaction_strategy_contract(self):
         code = (ROOT / "src/puzzle_interaction.gd").read_text(encoding="utf-8")
@@ -88,6 +91,23 @@ class PuzzleIntegrityTests(unittest.TestCase):
         self.assertIn("class_name AnswerInputFactory", code)
         for token in ["normalize_type", "button_labels", "validate"]:
             self.assertIn(token, code)
+
+    def test_progression_does_not_force_daily_campaign_unlocks(self):
+        code = (ROOT / "src/progression_service.gd").read_text(encoding="utf-8")
+        self.assertIn("mark_campaign_level", code)
+        self.assertIn("if mark_campaign_level and level_manager != null", code)
+
+    def test_stats_track_attempt_time(self):
+        code = (ROOT / "src/stats_manager.gd").read_text(encoding="utf-8")
+        for token in ["attempt_counted_time_seconds", "record_failed", "get_average_time"]:
+            self.assertIn(token, code)
+
+    def test_difficulty_and_streak_contracts(self):
+        difficulty = (ROOT / "src/difficulty_manager.gd").read_text(encoding="utf-8")
+        streak = (ROOT / "src/streak_manager.gd").read_text(encoding="utf-8")
+        self.assertIn("score_multiplier", difficulty)
+        for token in ["record_daily_completion", "get_multiplier", "best_streak"]:
+            self.assertIn(token, streak)
 
 
 if __name__ == "__main__":
