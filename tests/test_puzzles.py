@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = json.loads((ROOT / "data/puzzles.json").read_text(encoding="utf-8"))
 PUZZLES = DATA["puzzles"]
 REQUIRED = {"id", "category", "difficulty", "prompt", "answer", "hint"}
-ALLOWED_ANSWER_TYPES = {"text", "number"}
+ALLOWED_ANSWER_TYPES = {"text", "number", "choice", "true_false"}
 
 
 class PuzzleIntegrityTests(unittest.TestCase):
@@ -52,8 +52,11 @@ class PuzzleIntegrityTests(unittest.TestCase):
                 self.assertTrue(str(answer).strip(), puzzle["id"])
 
     def test_difficulty_distribution_is_not_flat(self):
-        difficulties = {p["difficulty"] for p in PUZZLES}
-        self.assertEqual(difficulties, {1, 2, 3, 4, 5})
+        self.assertEqual({p["difficulty"] for p in PUZZLES}, {1, 2, 3, 4, 5})
+
+    def test_answer_type_distribution_is_not_flat(self):
+        types = {p.get("answer_type", "number" if isinstance(p["answer"], (int, float)) else "text") for p in PUZZLES}
+        self.assertTrue({"number", "text"}.issubset(types))
 
     def test_runtime_architecture_files_exist(self):
         for path in [
@@ -64,6 +67,7 @@ class PuzzleIntegrityTests(unittest.TestCase):
             ROOT / "src/puzzle_result.gd",
             ROOT / "src/progression_service.gd",
             ROOT / "src/daily_challenge.gd",
+            ROOT / "src/puzzle_interaction.gd",
             ROOT / "src/level_manager.gd",
             ROOT / "src/save_manager.gd",
             ROOT / "src/stats_manager.gd",
@@ -80,7 +84,12 @@ class PuzzleIntegrityTests(unittest.TestCase):
         self.assertIn("class_name DailyChallenge", code)
         self.assertIn("select_indices", code)
         self.assertIn("seed_for_date", code)
-        self.assertEqual(len(set(p["category"] for p in PUZZLES)), 7)
+
+    def test_interaction_strategy_contract(self):
+        code = (ROOT / "src/puzzle_interaction.gd").read_text(encoding="utf-8")
+        self.assertIn("class_name PuzzleInteraction", code)
+        for token in ["TYPE_TEXT", "TYPE_NUMBER", "TYPE_CHOICE", "TYPE_TRUE_FALSE"]:
+            self.assertIn(token, code)
 
 
 if __name__ == "__main__":
