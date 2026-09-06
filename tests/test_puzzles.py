@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = json.loads((ROOT / "data/puzzles.json").read_text(encoding="utf-8"))
 PUZZLES = DATA["puzzles"]
 REQUIRED = {"id", "category", "difficulty", "prompt", "answer", "hint"}
+ALLOWED_ANSWER_TYPES = {"text", "number"}
 
 
 class PuzzleIntegrityTests(unittest.TestCase):
@@ -26,10 +27,18 @@ class PuzzleIntegrityTests(unittest.TestCase):
             self.assertIsInstance(puzzle["hint"], str)
             self.assertTrue(puzzle["hint"].strip())
             self.assertIsInstance(puzzle["answer"], (str, int, float))
+            self.assertNotIsInstance(puzzle["answer"], bool)
             self.assertIsInstance(puzzle["difficulty"], int)
             self.assertIn(puzzle["difficulty"], {1, 2, 3, 4, 5})
             if isinstance(puzzle["answer"], float):
                 self.assertTrue(math.isfinite(puzzle["answer"]))
+            answer_type = puzzle.get("answer_type", "number" if isinstance(puzzle["answer"], (int, float)) else "text")
+            self.assertIn(answer_type, ALLOWED_ANSWER_TYPES)
+            if "answers" in puzzle:
+                self.assertIsInstance(puzzle["answers"], list)
+                self.assertTrue(puzzle["answers"])
+            if "time_limit_seconds" in puzzle:
+                self.assertGreater(puzzle["time_limit_seconds"], 0)
             ids.append(puzzle["id"])
             prompts.append(puzzle["prompt"].strip().lower())
         self.assertEqual(len(ids), len(set(ids)), "Duplicate puzzle IDs")
@@ -37,22 +46,21 @@ class PuzzleIntegrityTests(unittest.TestCase):
 
     def test_puzzle_answers_are_non_empty(self):
         for puzzle in PUZZLES:
-            self.assertTrue(str(puzzle["answer"]).strip(), puzzle["id"])
+            candidates = puzzle.get("answers", [puzzle["answer"]])
+            self.assertTrue(candidates, puzzle["id"])
+            for answer in candidates:
+                self.assertTrue(str(answer).strip(), puzzle["id"])
 
-    def test_optional_answers_are_valid(self):
-        for puzzle in PUZZLES:
-            if "answers" in puzzle:
-                self.assertIsInstance(puzzle["answers"], list)
-                self.assertTrue(puzzle["answers"])
-                for answer in puzzle["answers"]:
-                    self.assertTrue(str(answer).strip(), puzzle["id"])
-
-    def test_runtime_files_exist(self):
+    def test_runtime_architecture_files_exist(self):
         for path in [
             ROOT / "src/puzzle_engine.gd",
+            ROOT / "src/puzzle_definition.gd",
+            ROOT / "src/puzzle_repository.gd",
+            ROOT / "src/game_session.gd",
             ROOT / "src/level_manager.gd",
             ROOT / "src/save_manager.gd",
             ROOT / "src/stats_manager.gd",
+            ROOT / "src/event_tracker.gd",
             ROOT / "src/main.gd",
         ]:
             self.assertTrue(path.exists(), path)
