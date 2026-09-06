@@ -14,7 +14,7 @@ jobs:
       - name: Validate project files and puzzle data
         run: |
           set -e
-          for f in project.godot src/main.gd src/puzzle_engine.gd src/puzzle_definition.gd src/puzzle_repository.gd src/level_manager.gd src/save_manager.gd src/stats_manager.gd src/game_session.gd src/game_rules.gd src/difficulty_manager.gd src/achievement_manager.gd src/event_tracker.gd src/puzzle_result.gd src/progression_service.gd src/answer_input_factory.gd src/puzzle_interaction.gd src/daily_challenge.gd src/daily_challenge_service.gd src/life_manager.gd src/streak_manager.gd src/MainScene.tscn data/puzzles.json data/puzzles_extra.json; do test -f "$f"; done
+          for f in project.godot src/main.gd src/puzzle_engine.gd src/puzzle_definition.gd src/puzzle_repository.gd src/level_manager.gd src/save_manager.gd src/stats_manager.gd src/game_session.gd src/game_rules.gd src/difficulty_manager.gd src/achievement_manager.gd src/event_tracker.gd src/puzzle_result.gd src/progression_service.gd src/answer_input_factory.gd src/puzzle_interaction.gd src/daily_challenge.gd src/daily_challenge_service.gd src/life_manager.gd src/streak_manager.gd src/ui_polish.gd src/MainScene.tscn data/puzzles.json data/puzzles_extra.json; do test -f "$f"; done
           python3 -m json.tool data/puzzles.json >/dev/null
           python3 -m json.tool data/puzzles_extra.json >/dev/null
           python3 - <<'PY'
