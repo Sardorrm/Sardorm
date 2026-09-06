@@ -42,7 +42,7 @@ func record_attempt(puzzle: PuzzleDefinition, correct: bool, elapsed: float, att
         if event_tracker != null:
             event_tracker.record(EventTracker.LEVEL_SOLVED, result.to_dict())
     else:
-        stats_manager.record_failed(puzzle.category)
+        stats_manager.record_failed(puzzle.category, elapsed)
         if achievement_manager != null:
             achievement_manager.on_failed()
         if event_tracker != null:
