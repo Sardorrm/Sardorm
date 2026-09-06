@@ -15,6 +15,17 @@ class GameSessionContractTests(unittest.TestCase):
         self.assertIn("effective_now := paused_at_msec if paused else Time.get_ticks_msec()", code)
         self.assertIn("- paused_total_msec", code)
 
+    def test_pause_resume_ui_wiring(self):
+        code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        self.assertIn("var pause_button: Button", code)
+        self.assertIn('"⏸ PAUZA"', code)
+        self.assertIn('"▶ DAVOM ETISH"', code)
+        self.assertIn("func _toggle_pause()", code)
+        self.assertIn("session.pause()", code)
+        self.assertIn("session.resume()", code)
+        self.assertIn("timer_tick.stop()", code)
+        self.assertIn("timer_tick.start()", code)
+
 
 if __name__ == "__main__":
     unittest.main()
