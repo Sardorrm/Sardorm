@@ -16,6 +16,9 @@ size/window_height_override=640
 stretch/mode="canvas_items"
 handheld/orientation=1
 
+[gui]
+theme/custom="res://themes/mindshift_theme.tres"
+
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
