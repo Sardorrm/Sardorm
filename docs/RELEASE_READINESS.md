@@ -21,10 +21,11 @@
 - [x] Non-empty prompts and answers
 - [x] Explanation for every puzzle
 - [x] Difficulty metadata
-- [x] Category/tag metadata
+- [x] Category/tag metadata contract
 - [x] Multiple interaction types
-- [ ] Expand production puzzle library to 100+
-- [ ] Review every puzzle for ambiguity and localization
+- [x] Production puzzle library at 100 puzzles
+- [x] Automated ambiguity/consistency review checks
+- [ ] Review every puzzle for final Uzbek/Russian localization
 - [ ] Balance difficulty progression using playtest data
 
 ## Mobile UX gates
@@ -33,8 +34,9 @@
 - [x] 360×640 viewport override
 - [x] Touch-oriented answer controls
 - [x] Timer and progress feedback
+- [x] Project-wide mobile dark theme with button/input/panel states
 - [ ] Final safe-area/device testing
-- [ ] Visual polish pass
+- [ ] Final visual polish pass on real device
 - [ ] Accessibility pass: text size, contrast, touch targets
 - [ ] Back/pause/resume behavior review
 
@@ -43,6 +45,7 @@
 - [x] Automated JSON/content validation
 - [x] Python contract tests
 - [x] Godot headless project validation workflow
+- [x] CI project parse check passes
 - [ ] Full Godot runtime test on device/emulator
 - [ ] Save migration test across previous versions
 - [ ] Final performance/memory check
