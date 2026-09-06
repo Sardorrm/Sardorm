@@ -35,6 +35,8 @@ jobs:
           assert all(isinstance(p.get('tags', []), list) for p in puzzles)
           print(f'Validated {len(puzzles)} puzzles and gameplay content contracts')
           PY
+      - name: Run Python integrity tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Parse project with Godot
         run: |
           docker run --rm -v "$PWD:/project" barichello/godot-ci:4.3.0 godot --headless --path /project --editor --quit
