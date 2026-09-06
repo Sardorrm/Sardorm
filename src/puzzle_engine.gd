@@ -1,22 +1,42 @@
 class_name PuzzleEngine
 extends RefCounted
 
+const EXTRA_PATH_SUFFIX := ".extra.json"
+
 var puzzles: Array = []
 var last_error: String = ""
 
 func load_from_file(path: String) -> bool:
     last_error = ""
+    var incoming: Array = []
+    if not _read_puzzles(path, incoming):
+        return false
+    var extra_path := path.get_basename() + EXTRA_PATH_SUFFIX
+    if FileAccess.file_exists(extra_path):
+        var extra: Array = []
+        if not _read_puzzles(extra_path, extra):
+            return false
+        incoming.append_array(extra)
+    var ids: Dictionary = {}
+    for puzzle in incoming:
+        var id := str(puzzle["id"])
+        if ids.has(id):
+            last_error = "Invalid or duplicate puzzle id: " + id
+            return false
+        ids[id] = true
+    puzzles = incoming
+    return true
+
+func _read_puzzles(path: String, target: Array) -> bool:
     var file := FileAccess.open(path, FileAccess.READ)
     if file == null:
         last_error = "File not found: " + path
         return false
     var parsed = JSON.parse_string(file.get_as_text())
     if typeof(parsed) != TYPE_DICTIONARY or typeof(parsed.get("puzzles")) != TYPE_ARRAY:
-        last_error = "Invalid puzzle document"
+        last_error = "Invalid puzzle document: " + path
         return false
-    var incoming: Array = parsed["puzzles"]
-    var ids: Dictionary = {}
-    for puzzle in incoming:
+    for puzzle in parsed["puzzles"]:
         if typeof(puzzle) != TYPE_DICTIONARY:
             last_error = "Puzzle is not an object"
             return false
@@ -25,8 +45,8 @@ func load_from_file(path: String) -> bool:
                 last_error = "Missing field: " + field
                 return false
         var id := str(puzzle["id"])
-        if id.is_empty() or ids.has(id):
-            last_error = "Invalid or duplicate puzzle id: " + id
+        if id.is_empty():
+            last_error = "Empty puzzle id"
             return false
         var difficulty := int(puzzle["difficulty"])
         if difficulty < 1 or difficulty > 5:
@@ -41,8 +61,7 @@ func load_from_file(path: String) -> bool:
         if puzzle.has("answers") and typeof(puzzle["answers"]) == TYPE_ARRAY and puzzle["answers"].is_empty():
             last_error = "answers cannot be empty for " + id
             return false
-        ids[id] = true
-    puzzles = incoming
+        target.append(puzzle)
     return true
 
 func get_puzzle(index: int) -> Dictionary:
