@@ -48,6 +48,20 @@ func _ready() -> void:
     _build_shell()
     _show_home()
 
+func _unhandled_input(event: InputEvent) -> void:
+    if not (event is InputEventKey):
+        return
+    var key_event := event as InputEventKey
+    if not key_event.pressed or key_event.echo:
+        return
+    if key_event.keycode != KEY_ESCAPE:
+        return
+    if active_puzzle != null and session.state == GameSession.STATE_ACTIVE and not puzzle_finished:
+        _toggle_pause()
+    else:
+        _show_home()
+    get_viewport().set_input_as_handled()
+
 func _build_shell() -> void:
     root_ui = Control.new()
     root_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -73,6 +87,7 @@ func _clear_content() -> void:
         child.queue_free()
     timer_label = null
     pause_button = null
+    active_puzzle = null
     puzzle_finished = false
 
 func _label(text: String, size: int = 18) -> Label:
@@ -131,7 +146,7 @@ func _show_levels() -> void:
     scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
     content.add_child(scroll)
     var grid := GridContainer.new()
-    grid.columns = 4
+    grid.columns = 3
     grid.add_theme_constant_override("h_separation", 8)
     grid.add_theme_constant_override("v_separation", 8)
     scroll.add_child(grid)
@@ -140,6 +155,7 @@ func _show_levels() -> void:
         level_button.text = str(i + 1) + (" ✓" if level_manager.is_completed(i) else "")
         level_button.custom_minimum_size = Vector2(72, 58)
         level_button.disabled = not level_manager.is_unlocked(i)
+        level_button.tooltip_text = "Daraja %d" % (i + 1)
         level_button.pressed.connect(func(idx := i): _select_level(idx))
         grid.add_child(level_button)
     content.add_child(_button("ORTGA", _show_home))
