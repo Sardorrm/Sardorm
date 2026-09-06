@@ -26,3 +26,5 @@ jobs:
           assert len(ids) == len(set(ids)), 'Duplicate puzzle IDs'
           print(f'Validated {len(puzzles)} puzzles')
           PY
+      - name: Run Python integrity tests
+        run: python -m unittest discover -s tests -p 'test_*.py'
