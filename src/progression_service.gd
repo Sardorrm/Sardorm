@@ -30,7 +30,7 @@ func record_attempt(puzzle: PuzzleDefinition, correct: bool, elapsed: float, att
         return result
 
     if correct:
-        stats_manager.record_solved(elapsed, puzzle.category)
+        stats_manager.record_solved(elapsed, puzzle.category, result.score)
         if mark_campaign_level and level_manager != null:
             var level_index := _find_level_index(puzzle.id)
             if level_index >= 0:
