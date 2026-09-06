@@ -2,24 +2,55 @@ class_name SaveManager
 extends RefCounted
 
 const SAVE_PATH := "user://mindshift_save.json"
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
+
+static func _defaults() -> Dictionary:
+    return {
+        "version": SAVE_VERSION,
+        "current_level": 0,
+        "completed_levels": [],
+        "hints_used": 0,
+        "stats": {}
+    }
 
 static func load_progress() -> Dictionary:
+    var defaults := _defaults()
     if not FileAccess.file_exists(SAVE_PATH):
-        return {"version": SAVE_VERSION, "current_level": 0, "completed": [], "hints_used": 0}
+        return defaults
     var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
     if file == null:
-        return {"version": SAVE_VERSION, "current_level": 0, "completed": [], "hints_used": 0}
+        return defaults
     var data = JSON.parse_string(file.get_as_text())
     if typeof(data) != TYPE_DICTIONARY:
-        return {"version": SAVE_VERSION, "current_level": 0, "completed": [], "hints_used": 0}
-    data["version"] = int(data.get("version", SAVE_VERSION))
-    return data
+        return defaults
 
-static func save_progress(current_level: int, completed: Array, hints_used: int) -> bool:
+    var result := defaults.duplicate(true)
+    result["version"] = SAVE_VERSION
+    result["current_level"] = max(0, int(data.get("current_level", 0)))
+    var completed = data.get("completed_levels", data.get("completed", []))
+    if typeof(completed) == TYPE_ARRAY:
+        result["completed_levels"] = completed.duplicate()
+    result["hints_used"] = max(0, int(data.get("hints_used", 0)))
+    var stats = data.get("stats", {})
+    if typeof(stats) == TYPE_DICTIONARY:
+        result["stats"] = stats.duplicate(true)
+    return result
+
+static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}) -> bool:
     var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
     if file == null:
         return false
-    var data := {"version": SAVE_VERSION, "current_level": current_level, "completed": completed, "hints_used": hints_used}
+    var data := {
+        "version": SAVE_VERSION,
+        "current_level": max(0, current_level),
+        "completed_levels": completed_levels.duplicate(),
+        "hints_used": max(0, hints_used),
+        "stats": stats.duplicate(true)
+    }
     file.store_string(JSON.stringify(data))
-    return true
+    return file.get_error() == OK
+
+static func clear_progress() -> bool:
+    if not FileAccess.file_exists(SAVE_PATH):
+        return true
+    return DirAccess.remove_absolute(SAVE_PATH) == OK
