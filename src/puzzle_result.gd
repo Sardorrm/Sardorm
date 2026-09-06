@@ -10,6 +10,7 @@ var score := 0
 var stars := 0
 var difficulty := 1
 var category := ""
+var score_multiplier := 1.0
 var newly_unlocked: Array = []
 
 func configure(puzzle: PuzzleDefinition, solved: bool, elapsed: float, attempts: int, used_hint: bool) -> PuzzleResult:
@@ -20,6 +21,7 @@ func configure(puzzle: PuzzleDefinition, solved: bool, elapsed: float, attempts:
     hint_used = used_hint
     difficulty = puzzle.difficulty if puzzle != null else 1
     category = puzzle.category if puzzle != null else ""
+    score_multiplier = DifficultyManager.score_multiplier(difficulty)
     if solved:
         score = GameRules.calculate_score(difficulty, elapsed_seconds, hint_used, failed_attempts)
         stars = GameRules.star_rating(difficulty, elapsed_seconds, hint_used, failed_attempts)
@@ -36,5 +38,6 @@ func to_dict() -> Dictionary:
         "stars": stars,
         "difficulty": difficulty,
         "category": category,
+        "score_multiplier": score_multiplier,
         "newly_unlocked": newly_unlocked.duplicate()
     }
