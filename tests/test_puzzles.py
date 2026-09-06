@@ -144,6 +144,14 @@ class PuzzleIntegrityTests(unittest.TestCase):
             self.assertIn(token, code)
         self.assertIn("paused_total_msec", code.split("func get_elapsed_seconds()", 1)[1])
 
+    def test_save_version_and_migration_contract(self):
+        code = (ROOT / "src/save_manager.gd").read_text(encoding="utf-8")
+        self.assertIn("const SAVE_VERSION := 6", code)
+        self.assertIn("source_version", code)
+        self.assertIn("data.get(\"version\", 1)", code)
+        self.assertIn("completed_levels", code)
+        self.assertIn("settings", code)
+
 
 if __name__ == "__main__":
     unittest.main()
