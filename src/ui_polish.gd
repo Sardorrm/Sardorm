@@ -3,7 +3,9 @@ extends Node
 const TIMER_WARNING_SECONDS := 10
 const TIMER_CRITICAL_SECONDS := 5
 const LEVEL_BUTTON_SIZE := Vector2(76, 64)
+const HAPTIC_MS := 18
 var pulse_time := 0.0
+var styled_nodes: Dictionary = {}
 
 func _process(delta: float) -> void:
     pulse_time += delta
@@ -13,19 +15,30 @@ func _process(delta: float) -> void:
     _polish_tree(root)
 
 func _polish_tree(node: Node) -> void:
+    var node_id := node.get_instance_id()
+    if not styled_nodes.has(node_id):
+        _apply_static_polish(node)
+        styled_nodes[node_id] = true
+
+    if node is Label and node.text.begins_with("⏱"):
+        _polish_timer(node)
+
+    for child in node.get_children():
+        _polish_tree(child)
+
+func _apply_static_polish(node: Node) -> void:
     if node is Button:
         _polish_button(node)
-    elif node is Label:
-        _polish_label(node)
     elif node is LineEdit:
         node.custom_minimum_size.y = maxf(node.custom_minimum_size.y, 60.0)
         node.add_theme_font_size_override("font_size", 21)
-    for child in node.get_children():
-        _polish_tree(child)
 
 func _polish_button(button: Button) -> void:
     button.custom_minimum_size.y = maxf(button.custom_minimum_size.y, 58.0)
     button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+    if not button.pressed.is_connected(_on_button_pressed):
+        button.pressed.connect(_on_button_pressed)
+
     if button.get_parent() is GridContainer:
         _polish_level_button(button)
     elif button.text == "TEKSHIRISH" or button.text == "KEYINGI DARAJA" or button.text == "KEYINGISI":
@@ -43,16 +56,9 @@ func _polish_level_button(button: Button) -> void:
     else:
         button.tooltip_text = "Daraja %d" % level
 
-func _polish_label(label: Label) -> void:
-    if label.text.begins_with("⏱"):
-        _polish_timer(label)
-        return
-    if label.text == "MINDSHIFT":
-        label.add_theme_font_size_override("font_size", 36)
-    elif label.text.begins_with("✓ TO‘G‘RI"):
-        label.add_theme_font_size_override("font_size", 21)
-    elif label.text.begins_with("Hali emas"):
-        label.add_theme_font_size_override("font_size", 19)
+func _on_button_pressed() -> void:
+    if OS.has_feature("android") or OS.has_feature("ios"):
+        Input.vibrate_handheld(HAPTIC_MS, 0.25)
 
 func _polish_timer(label: Label) -> void:
     var seconds := _extract_timer_seconds(label.text)
