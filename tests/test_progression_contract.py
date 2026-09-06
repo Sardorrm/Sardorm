@@ -8,9 +8,8 @@ class ProgressionContractTests(unittest.TestCase):
     def test_progression_matches_stats_api(self):
         progression = (ROOT / "src" / "progression_service.gd").read_text(encoding="utf-8")
         stats = (ROOT / "src" / "stats_manager.gd").read_text(encoding="utf-8")
-        self.assertIn("stats_manager.record_solved(elapsed, puzzle.category)", progression)
-        self.assertNotIn("stats_manager.record_solved(elapsed, puzzle.category, result.score)", progression)
-        self.assertIn("func record_solved(seconds: float, category: String = \"\")", stats)
+        self.assertIn("stats_manager.record_solved(elapsed, puzzle.category, result.score)", progression)
+        self.assertIn("func record_solved(seconds: float, category: String = \"\", score: int = 0)", stats)
 
     def test_daily_achievement_contract(self):
         achievements = (ROOT / "src" / "achievement_manager.gd").read_text(encoding="utf-8")
