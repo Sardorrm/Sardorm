@@ -3,8 +3,9 @@
 MindShift is a mobile-first intellectual puzzle game built around one idea: **don't just find the answer — change the way you think.**
 
 ## Current build
-- 35 deterministic puzzles across pattern, logic, sequence, observation, spatial, assumption and MindShift categories
+- 100 deterministic puzzles across pattern, logic, sequence, observation, spatial, assumption and MindShift categories
 - Four answer modes: text, number, multiple choice and true/false
+- Modular puzzle content packs (`data/puzzles.json` + `data/puzzles_extra.json`)
 - Godot 4 portrait runtime foundation with touch-friendly UI
 - Puzzle engine with normalized numeric/text answer validation and accepted-answer aliases
 - Level unlocking and completion tracking
@@ -17,6 +18,7 @@ MindShift is a mobile-first intellectual puzzle game built around one idea: **do
 - Player statistics, accuracy, average attempt time and reasoning profile
 - Achievement system and gameplay event tracking
 - Automated puzzle integrity tests and Godot headless CI validation
+- Release-readiness checklist covering content, UX, QA, export and store preparation
 
 ## Development workflow
 Notion is the product/project source of truth. GitHub is the code and engineering source of truth.
@@ -24,8 +26,8 @@ Notion is the product/project source of truth. GitHub is the code and engineerin
 Idea → Notion task → GitHub issue → implementation → commit → tests/CI → inspect result → update project status.
 
 ## Project structure
-- `docs/` — game design, architecture and product-balance documentation
-- `data/` — puzzle definitions
+- `docs/` — game design, architecture, product balance and release-readiness documentation
+- `data/` — base and modular puzzle definitions
 - `src/` — Godot runtime and gameplay systems
 - `tests/` — automated integrity and architecture-contract tests
 - `.github/` — CI automation
@@ -34,4 +36,4 @@ Idea → Notion task → GitHub issue → implementation → commit → tests/CI
 The campaign and Daily Challenge are intentionally separated: solving a Daily Challenge puzzle contributes to statistics and achievements but does not silently unlock campaign levels. Difficulty score multipliers are centralized in `GameRules`, while Daily streak multipliers apply only to Daily Challenge rewards.
 
 ## Status
-The playable core, progression, Daily Challenge, lives, streaks, statistics, achievements and automated validation foundations are implemented. Remaining release work includes expanding the reviewed puzzle library, deeper difficulty balancing, full Android device QA, visual/audio polish, Android export configuration, store assets and final release validation.
+The project now has a 100-puzzle content library and modular loading. Remaining release work includes content review/localization, deeper difficulty balancing, full Android device QA, visual/audio polish, accessibility, save migration testing, Android export configuration, store assets and final release validation.
