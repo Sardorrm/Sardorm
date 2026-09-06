@@ -28,6 +28,7 @@ jobs:
           test -f src/event_tracker.gd
           test -f src/puzzle_result.gd
           test -f src/progression_service.gd
+          test -f src/answer_input_factory.gd
           test -f src/MainScene.tscn
           python3 -m json.tool data/puzzles.json >/dev/null
           python3 - <<'PY'
@@ -35,13 +36,16 @@ jobs:
           from pathlib import Path
           data = json.loads(Path('data/puzzles.json').read_text())
           puzzles = data.get('puzzles', [])
-          assert len(puzzles) >= 10
+          assert len(puzzles) >= 35
           required = {'id','category','difficulty','prompt','answer','hint'}
           assert all(required <= p.keys() for p in puzzles)
           ids = [p['id'] for p in puzzles]
           assert len(ids) == len(set(ids))
           assert all(1 <= int(p['difficulty']) <= 5 for p in puzzles)
-          print(f'Validated {len(puzzles)} puzzles and runtime structure')
+          types = {p.get('answer_type', 'number' if isinstance(p['answer'], (int, float)) else 'text') for p in puzzles}
+          assert {'number', 'text', 'choice', 'true_false'} <= types
+          assert all(p.get('explanation', '').strip() for p in puzzles)
+          print(f'Validated {len(puzzles)} puzzles, all answer types, and learning explanations')
           PY
       - name: Parse project with Godot
         run: |
