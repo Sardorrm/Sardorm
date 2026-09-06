@@ -49,12 +49,7 @@ func _ready() -> void:
     _show_home()
 
 func _unhandled_input(event: InputEvent) -> void:
-    if not (event is InputEventKey):
-        return
-    var key_event := event as InputEventKey
-    if not key_event.pressed or key_event.echo:
-        return
-    if key_event.keycode != KEY_ESCAPE:
+    if not event.is_action_pressed("ui_cancel"):
         return
     if active_puzzle != null and session.state == GameSession.STATE_ACTIVE and not puzzle_finished:
         _toggle_pause()
@@ -120,6 +115,7 @@ func _show_home() -> void:
     content.add_child(_button("BUGUNGI CHALLENGE", _start_daily))
     content.add_child(_button("DARAJALAR", _show_levels))
     content.add_child(_button("STATISTIKA", _show_stats))
+    content.add_child(_button("YUTUQLAR", _show_achievements))
     content.add_child(_button("SOZLAMALAR", _show_settings))
 
 func _continue_game() -> void:
@@ -254,7 +250,7 @@ func _submit_answer(value: String, input: LineEdit, feedback: Label, hint: Label
             input.editable = false
         hint.text = "🧠 " + active_puzzle.explanation if active_puzzle.has_explanation() else ""
         if not result.newly_unlocked.is_empty():
-            feedback.text += "\n🏆 Yangi daraja ochildi!"
+            feedback.text += "\n🏆 Yangi yutuq ochildi!"
         if daily_mode:
             daily.record_solved()
         _save()
@@ -318,12 +314,15 @@ func _complete_daily() -> void:
     if daily.is_session_completed():
         daily.mark_completed()
         streak.record_daily_completion(daily.current_date)
+    var newly_daily := progression.record_daily_completion(streak.current_streak)
     daily_mode = false
     _save()
     _clear_content()
     content.add_child(_label("🔥 DAILY CHALLENGE TUGADI!", 30))
     content.add_child(_label("Bugungi %d ta puzzle yakunlandi." % daily_puzzles.size(), 20))
     content.add_child(_label("🔥 Streak: %d kun • Rekord: %d kun" % [streak.current_streak, streak.best_streak], 18))
+    if not newly_daily.is_empty():
+        content.add_child(_label("🏆 Yangi yutuq: %s" % _achievement_names(newly_daily), 18))
     content.add_child(_button("BOSH MENYU", _show_home, 68))
 
 func _show_daily() -> void:
@@ -383,10 +382,43 @@ func _show_stats() -> void:
     _clear_content()
     var profile := stats.get_profile()
     content.add_child(_label("STATISTIKA", 34))
-    content.add_child(_label("Yechilgan: %d\nXatolar: %d\nAniqlik: %.1f%%\nO‘rtacha vaqt: %.1fs" % [stats.solved, stats.failed, stats.get_accuracy(), stats.get_average_time()], 19))
+    content.add_child(_label("Yechilgan: %d\nXatolar: %d\nAniqlik: %.1f%%\nO‘rtacha vaqt: %.1fs\nJami ball: %d" % [stats.solved, stats.failed, stats.get_accuracy(), stats.get_average_time(), stats.total_score], 19))
     content.add_child(_label("🔥 Daily streak: %d\n🏆 Rekord: %d" % [streak.current_streak, streak.best_streak], 19))
     content.add_child(_label("🧠 Profil: %s (%.0f/100)" % [profile.name, profile.score], 20))
+    content.add_child(_button("YUTUQLAR", _show_achievements))
     content.add_child(_button("ORTGA", _show_home))
+
+func _show_achievements() -> void:
+    _clear_content()
+    content.add_child(_label("YUTUQLAR", 34))
+    var unlocked_count := 0
+    for definition in AchievementManager.DEFINITIONS:
+        if achievements.is_unlocked(str(definition.id)):
+            unlocked_count += 1
+    content.add_child(_label("Ochilgan: %d / %d" % [unlocked_count, AchievementManager.DEFINITIONS.size()], 18))
+    var scroll := ScrollContainer.new()
+    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    content.add_child(scroll)
+    var list := VBoxContainer.new()
+    list.add_theme_constant_override("separation", 10)
+    scroll.add_child(list)
+    for definition in AchievementManager.DEFINITIONS:
+        var id := str(definition.id)
+        var unlocked := achievements.is_unlocked(id)
+        var marker := "🏆" if unlocked else "🔒"
+        var state := "OCHILGAN" if unlocked else "YOPIQ"
+        var text := "%s %s\n%s\n%s" % [marker, str(definition.name), str(definition.description), state]
+        var card := _label(text, 17)
+        card.custom_minimum_size = Vector2(0, 82)
+        list.add_child(card)
+    content.add_child(_button("ORTGA", _show_home))
+
+func _achievement_names(ids: Array) -> String:
+    var names: Array = []
+    for definition in AchievementManager.DEFINITIONS:
+        if ids.has(str(definition.id)):
+            names.append(str(definition.name))
+    return ", ".join(names)
 
 func _show_settings() -> void:
     _clear_content()
