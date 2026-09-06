@@ -39,10 +39,11 @@
 - [x] Timer and progress feedback
 - [x] Project-wide mobile dark theme with button/input/panel states
 - [x] Result feedback shows stars, score, time and daily multiplier when applicable
+- [x] Gameplay session has pause/resume time accounting
+- [ ] Wire pause/resume controls into final gameplay UI
 - [ ] Final safe-area/device testing
 - [ ] Final visual polish pass on real device
 - [ ] Accessibility pass: text size, contrast, touch targets
-- [ ] Back/pause/resume behavior review
 
 ## Technical release gates
 
