@@ -1,0 +1,33 @@
+import pathlib
+import unittest
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+
+class SaveManagerContractTests(unittest.TestCase):
+    def test_save_schema_is_versioned(self):
+        code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
+        self.assertIn("const SAVE_VERSION := 6", code)
+        self.assertIn('"version": SAVE_VERSION', code)
+        self.assertIn("static func load_progress()", code)
+        self.assertIn("static func save_progress(", code)
+
+    def test_legacy_save_fields_have_safe_defaults(self):
+        code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
+        for token in [
+            'data.get("completed_levels", data.get("completed", []))',
+            'data.get("hints_used", 0)',
+            'data.get("settings", {})',
+            'defaults["settings"].merged(settings)',
+            'result["version"] = SAVE_VERSION',
+        ]:
+            self.assertIn(token, code)
+
+    def test_new_progression_domains_are_persisted(self):
+        code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
+        for key in ["stats", "achievements", "daily_challenges", "streak", "lives", "settings"]:
+            self.assertIn('"%s"' % key, code)
+
+
+if __name__ == "__main__":
+    unittest.main()
