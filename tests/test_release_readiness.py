@@ -23,11 +23,12 @@ class ReleaseReadinessTests(unittest.TestCase):
             self.assertIn(answer_type, {"text", "number", "choice", "true_false"})
             self.assertIn(int(puzzle.get("difficulty", 0)), range(1, 6))
 
-    def test_android_project_is_portrait(self):
+    def test_android_project_is_portrait_and_versioned(self):
         project = (ROOT / "project.godot").read_text(encoding="utf-8")
         self.assertIn('handheld/orientation=1', project)
         self.assertIn('size/viewport_width=720', project)
         self.assertIn('size/viewport_height=1280', project)
+        self.assertIn('config/version="0.1.0"', project)
 
     def test_mobile_theme_is_configured(self):
         project = (ROOT / "project.godot").read_text(encoding="utf-8")
@@ -61,7 +62,7 @@ class ReleaseReadinessTests(unittest.TestCase):
     def test_android_back_navigation_contract(self):
         code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
         self.assertIn("func _unhandled_input(event: InputEvent)", code)
-        self.assertIn("key_event.keycode != KEY_ESCAPE", code)
+        self.assertIn('event.is_action_pressed("ui_cancel")', code)
         self.assertIn("_toggle_pause()", code)
         self.assertIn("get_viewport().set_input_as_handled()", code)
 
@@ -69,6 +70,14 @@ class ReleaseReadinessTests(unittest.TestCase):
         code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
         self.assertIn("grid.columns = 3", code)
         self.assertIn("level_button.tooltip_text", code)
+
+    def test_achievement_screen_contract(self):
+        code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        achievements = (ROOT / "src" / "achievement_manager.gd").read_text(encoding="utf-8")
+        self.assertIn('"YUTUQLAR"', code)
+        self.assertIn("_show_achievements", code)
+        self.assertIn("AchievementManager.DEFINITIONS", code)
+        self.assertIn("func on_solved", achievements)
 
     def test_android_release_plan_exists(self):
         plan = ROOT / "docs" / "ANDROID_RELEASE.md"
