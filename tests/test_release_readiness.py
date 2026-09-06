@@ -49,6 +49,15 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn("⏱ %ds", code)
         self.assertIn("_polish_feedback", polish)
 
+    def test_pause_resume_ui_contract(self):
+        code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        self.assertIn('"⏸ PAUZA"', code)
+        self.assertIn('"▶ DAVOM ETISH"', code)
+        self.assertIn("func _toggle_pause()", code)
+        self.assertIn("session.pause()", code)
+        self.assertIn("session.resume()", code)
+        self.assertIn("or session.paused", code)
+
 
 if __name__ == "__main__":
     unittest.main()
