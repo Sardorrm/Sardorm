@@ -68,3 +68,7 @@
 ## Definition of done
 
 MindShift is release-ready when all unchecked release gates are completed and a clean build has been verified through the complete campaign, daily challenge, save/load, lives, hints, achievements, and statistics flows on a real Android device.
+
+## Android verification plan
+
+See `docs/ANDROID_RELEASE.md` for the device test sequence and release blockers.
