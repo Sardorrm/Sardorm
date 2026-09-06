@@ -2,7 +2,7 @@ class_name PuzzleRepository
 extends RefCounted
 
 const SUPPORTED_ANSWER_TYPES := ["text", "number", "choice", "true_false"]
-const EXTRA_PATH_SUFFIX := ".extra.json"
+const EXTRA_PATH_SUFFIX := "_extra.json"
 
 var puzzles: Array[PuzzleDefinition] = []
 var by_id: Dictionary = {}
