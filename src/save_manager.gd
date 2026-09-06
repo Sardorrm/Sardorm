@@ -2,7 +2,7 @@ class_name SaveManager
 extends RefCounted
 
 const SAVE_PATH := "user://mindshift_save.json"
-const SAVE_VERSION := 5
+const SAVE_VERSION := 6
 
 static func _defaults() -> Dictionary:
     return {
@@ -29,6 +29,7 @@ static func load_progress() -> Dictionary:
     if typeof(data) != TYPE_DICTIONARY:
         return defaults
     var result := defaults.duplicate(true)
+    var source_version := int(data.get("version", 1))
     result["version"] = SAVE_VERSION
     result["current_level"] = max(0, int(data.get("current_level", 0)))
     var completed = data.get("completed_levels", data.get("completed", []))
@@ -42,6 +43,12 @@ static func load_progress() -> Dictionary:
     var settings = data.get("settings", {})
     if typeof(settings) == TYPE_DICTIONARY:
         result["settings"] = defaults["settings"].merged(settings)
+
+    # v5 and earlier saves remain readable; missing newer fields receive defaults.
+    if source_version < 5 and result["streak"].is_empty():
+        result["streak"] = defaults["streak"].duplicate(true)
+    if source_version < 4 and result["lives"].is_empty():
+        result["lives"] = defaults["lives"].duplicate(true)
     return result
 
 static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}, achievements: Dictionary = {}, settings: Dictionary = {}, daily_challenges: Dictionary = {}, lives: Dictionary = {}, streak: Dictionary = {}) -> bool:
