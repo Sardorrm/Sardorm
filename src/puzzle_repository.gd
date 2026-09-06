@@ -1,6 +1,8 @@
 class_name PuzzleRepository
 extends RefCounted
 
+const SUPPORTED_ANSWER_TYPES := ["text", "number", "choice", "true_false"]
+
 var puzzles: Array[PuzzleDefinition] = []
 var by_id: Dictionary = {}
 var last_error: String = ""
@@ -69,7 +71,15 @@ func _validate(puzzle: PuzzleDefinition) -> bool:
     if puzzle.get_answers().is_empty():
         last_error = "No answer for " + puzzle.id
         return false
-    if puzzle.answer_type not in ["text", "number"]:
+    if puzzle.answer_type not in SUPPORTED_ANSWER_TYPES:
         last_error = "Unsupported answer_type for " + puzzle.id
         return false
+    if puzzle.answer_type in ["choice", "true_false"] and puzzle.answers.is_empty():
+        last_error = "Choice/true_false puzzle requires answers for " + puzzle.id
+        return false
+    if puzzle.answer_type == "true_false":
+        for option in puzzle.answers:
+            if str(option).to_lower() not in ["true", "false"]:
+                last_error = "true_false options must be true/false for " + puzzle.id
+                return false
     return true
