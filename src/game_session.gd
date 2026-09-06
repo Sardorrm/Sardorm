@@ -20,6 +20,9 @@ var hints_used: int = 0
 var last_answer: String = ""
 var time_limit_seconds := 0.0
 var timeout_recorded := false
+var paused := false
+var paused_at_msec: int = 0
+var paused_total_msec: int = 0
 
 func start(new_puzzle: PuzzleDefinition, fallback_time_limit: float = 0.0) -> bool:
     if new_puzzle == null:
@@ -34,11 +37,14 @@ func start(new_puzzle: PuzzleDefinition, fallback_time_limit: float = 0.0) -> bo
     if time_limit_seconds <= 0.0:
         time_limit_seconds = max(0.0, fallback_time_limit)
     timeout_recorded = false
+    paused = false
+    paused_at_msec = 0
+    paused_total_msec = 0
     _set_state(STATE_ACTIVE)
     return true
 
 func submit(answer: String) -> bool:
-    if state != STATE_ACTIVE or puzzle == null:
+    if state != STATE_ACTIVE or puzzle == null or paused:
         return false
     if check_timeout():
         return false
@@ -56,7 +62,7 @@ func submit(answer: String) -> bool:
     return correct
 
 func timeout() -> bool:
-    if state != STATE_ACTIVE or timeout_recorded:
+    if state != STATE_ACTIVE or timeout_recorded or paused:
         return false
     timeout_recorded = true
     _set_state(STATE_TIMEOUT)
@@ -64,13 +70,29 @@ func timeout() -> bool:
     return true
 
 func use_hint() -> bool:
-    if state != STATE_ACTIVE or puzzle == null or hints_used > 0:
+    if state != STATE_ACTIVE or puzzle == null or hints_used > 0 or paused:
         return false
     hints_used = 1
     return true
 
+func pause() -> bool:
+    if state != STATE_ACTIVE or paused:
+        return false
+    paused = true
+    paused_at_msec = Time.get_ticks_msec()
+    return true
+
+func resume() -> bool:
+    if not paused:
+        return false
+    var now := Time.get_ticks_msec()
+    paused_total_msec += maxi(0, now - paused_at_msec)
+    paused_at_msec = 0
+    paused = false
+    return true
+
 func check_timeout() -> bool:
-    if state != STATE_ACTIVE or time_limit_seconds <= 0.0 or timeout_recorded:
+    if state != STATE_ACTIVE or paused or time_limit_seconds <= 0.0 or timeout_recorded:
         return false
     if get_elapsed_seconds() < time_limit_seconds:
         return false
@@ -79,7 +101,8 @@ func check_timeout() -> bool:
 func get_elapsed_seconds() -> float:
     if started_at_msec <= 0:
         return 0.0
-    return max(0.0, float(Time.get_ticks_msec() - started_at_msec) / 1000.0)
+    var effective_now := paused_at_msec if paused else Time.get_ticks_msec()
+    return max(0.0, float(effective_now - started_at_msec - paused_total_msec) / 1000.0)
 
 func get_remaining_seconds() -> float:
     if time_limit_seconds <= 0.0:
@@ -100,6 +123,9 @@ func reset() -> void:
     last_answer = ""
     time_limit_seconds = 0.0
     timeout_recorded = false
+    paused = false
+    paused_at_msec = 0
+    paused_total_msec = 0
     _set_state(STATE_IDLE)
 
 func _matches_answer(value: String) -> bool:
