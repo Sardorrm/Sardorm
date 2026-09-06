@@ -8,19 +8,31 @@ var completed_dates: Array = []
 var current_date := ""
 var current_indices: Array = []
 var completed_count := 0
+var current_position := 0
 
 func setup(puzzle_repository: PuzzleRepository, save_data: Dictionary = {}) -> void:
     repository = puzzle_repository
     var stored = save_data.get("daily_challenges", {})
     if typeof(stored) == TYPE_DICTIONARY:
         completed_dates = stored.get("completed_dates", []).duplicate()
+        var stored_date := str(stored.get("date", ""))
+        if stored_date == DailyChallenge.date_key():
+            completed_count = clampi(int(stored.get("completed_count", 0)), 0, CHALLENGE_SIZE)
+            current_position = clampi(int(stored.get("current_position", completed_count)), 0, CHALLENGE_SIZE)
     refresh()
 
 func refresh(unix_time: int = -1) -> void:
-    current_date = DailyChallenge.date_key(unix_time)
+    var next_date := DailyChallenge.date_key(unix_time)
+    var date_changed := next_date != current_date
+    current_date = next_date
     var count := repository.puzzles.size() if repository != null else 0
     current_indices = DailyChallenge.select_indices(count, current_date, CHALLENGE_SIZE)
-    completed_count = 0
+    if date_changed:
+        completed_count = 0
+        current_position = 0
+    else:
+        completed_count = clampi(completed_count, 0, min(CHALLENGE_SIZE, current_indices.size()))
+        current_position = clampi(current_position, 0, current_indices.size())
 
 func get_puzzles() -> Array:
     var result: Array = []
@@ -33,15 +45,22 @@ func get_puzzles() -> Array:
 
 func reset_progress() -> void:
     completed_count = 0
+    current_position = 0
 
 func record_solved() -> void:
+    if current_position >= current_indices.size():
+        return
     completed_count = mini(CHALLENGE_SIZE, completed_count + 1)
+    current_position = mini(current_indices.size(), current_position + 1)
+
+func record_failed() -> void:
+    current_position = mini(current_indices.size(), current_position + 1)
 
 func is_completed() -> bool:
     return current_date in completed_dates
 
 func is_session_completed() -> bool:
-    return completed_count >= mini(CHALLENGE_SIZE, current_indices.size()) and not current_indices.is_empty()
+    return current_position >= current_indices.size() and completed_count >= mini(CHALLENGE_SIZE, current_indices.size()) and not current_indices.is_empty()
 
 func mark_completed() -> void:
     if is_session_completed() and not is_completed():
@@ -55,5 +74,6 @@ func to_dict() -> Dictionary:
         "date": current_date,
         "indices": current_indices.duplicate(),
         "completed_count": completed_count,
+        "current_position": current_position,
         "completed_dates": completed_dates.duplicate()
     }
