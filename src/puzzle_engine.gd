@@ -1,7 +1,7 @@
 class_name PuzzleEngine
 extends RefCounted
 
-const EXTRA_PATH_SUFFIX := ".extra.json"
+const EXTRA_PATH_SUFFIX := "_extra.json"
 
 var puzzles: Array = []
 var last_error: String = ""
