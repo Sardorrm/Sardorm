@@ -2,6 +2,7 @@ class_name PuzzleRepository
 extends RefCounted
 
 const SUPPORTED_ANSWER_TYPES := ["text", "number", "choice", "true_false"]
+const EXTRA_PATH_SUFFIX := ".extra.json"
 
 var puzzles: Array[PuzzleDefinition] = []
 var by_id: Dictionary = {}
@@ -11,24 +12,32 @@ func load_from_file(path: String) -> bool:
     last_error = ""
     puzzles.clear()
     by_id.clear()
+    var paths := [path]
+    var extra_path := path.get_basename() + EXTRA_PATH_SUFFIX
+    if FileAccess.file_exists(extra_path):
+        paths.append(extra_path)
+    for source_path in paths:
+        if not _load_document(source_path):
+            puzzles.clear()
+            by_id.clear()
+            return false
+    return true
+
+func _load_document(path: String) -> bool:
     var file := FileAccess.open(path, FileAccess.READ)
     if file == null:
         last_error = "File not found: " + path
         return false
     var parsed = JSON.parse_string(file.get_as_text())
     if typeof(parsed) != TYPE_DICTIONARY or typeof(parsed.get("puzzles")) != TYPE_ARRAY:
-        last_error = "Invalid puzzle document"
+        last_error = "Invalid puzzle document: " + path
         return false
     for raw in parsed["puzzles"]:
         if typeof(raw) != TYPE_DICTIONARY:
             last_error = "Puzzle is not an object"
-            puzzles.clear()
-            by_id.clear()
             return false
         var puzzle := PuzzleDefinition.from_dict(raw)
         if not _validate(puzzle):
-            puzzles.clear()
-            by_id.clear()
             return false
         puzzles.append(puzzle)
         by_id[puzzle.id] = puzzle
