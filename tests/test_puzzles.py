@@ -51,6 +51,25 @@ class PuzzleIntegrityTests(unittest.TestCase):
             for answer in candidates:
                 self.assertTrue(str(answer).strip(), puzzle["id"])
 
+    def test_puzzle_explanations_are_reviewed(self):
+        banned_fragments = ["not a good puzzle", "ambiguous;", "ambiguous pattern"]
+        for puzzle in PUZZLES:
+            explanation = puzzle.get("explanation", "").lower()
+            self.assertFalse(any(fragment in explanation for fragment in banned_fragments), puzzle["id"])
+
+    def test_choice_and_boolean_options_are_consistent(self):
+        for puzzle in PUZZLES:
+            answer_type = puzzle.get("answer_type", "number" if isinstance(puzzle["answer"], (int, float)) else "text")
+            if answer_type == "choice":
+                options = [str(value).strip().lower() for value in puzzle.get("answers", [])]
+                self.assertGreaterEqual(len(options), 2, puzzle["id"])
+                self.assertEqual(len(options), len(set(options)), puzzle["id"])
+                self.assertIn(str(puzzle["answer"]).strip().lower(), options, puzzle["id"])
+            if answer_type == "true_false":
+                options = [str(value).strip().lower() for value in puzzle.get("answers", [])]
+                self.assertEqual(options, ["true", "false"], puzzle["id"])
+                self.assertIn(str(puzzle["answer"]).strip().lower(), options, puzzle["id"])
+
     def test_difficulty_distribution_is_not_flat(self):
         self.assertEqual({p["difficulty"] for p in PUZZLES}, {1, 2, 3, 4, 5})
         self.assertGreaterEqual(sum(p["difficulty"] == 5 for p in PUZZLES), 10)
