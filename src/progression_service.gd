@@ -30,7 +30,7 @@ func record_attempt(puzzle: PuzzleDefinition, correct: bool, elapsed: float, att
         return result
 
     if correct:
-        stats_manager.record_solved(elapsed, puzzle.category)
+        stats_manager.record_solved(elapsed, puzzle.category, result.score)
         if mark_campaign_level and level_manager != null:
             var level_index := _find_level_index(puzzle.id)
             if level_index >= 0:
@@ -54,6 +54,15 @@ func record_attempt(puzzle: PuzzleDefinition, correct: bool, elapsed: float, att
 
     progression_changed.emit()
     return result
+
+func record_daily_completion(current_streak: int) -> Array:
+    if achievement_manager == null:
+        return []
+    var newly := achievement_manager.on_daily_completed(current_streak)
+    for achievement_id in newly:
+        achievement_unlocked.emit(achievement_id)
+    progression_changed.emit()
+    return newly
 
 func _find_level_index(puzzle_id: String) -> int:
     if level_manager == null or level_manager.puzzle_engine == null:
