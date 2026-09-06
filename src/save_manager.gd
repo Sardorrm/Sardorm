@@ -2,7 +2,7 @@ class_name SaveManager
 extends RefCounted
 
 const SAVE_PATH := "user://mindshift_save.json"
-const SAVE_VERSION := 4
+const SAVE_VERSION := 5
 
 static func _defaults() -> Dictionary:
     return {
@@ -13,6 +13,7 @@ static func _defaults() -> Dictionary:
         "stats": {},
         "achievements": {},
         "daily_challenges": {},
+        "streak": {"current_streak": 0, "best_streak": 0, "last_completed_date": ""},
         "lives": {"lives": 3, "last_loss_unix": 0},
         "settings": {"sound": true, "haptics": true}
     }
@@ -34,7 +35,7 @@ static func load_progress() -> Dictionary:
     if typeof(completed) == TYPE_ARRAY:
         result["completed_levels"] = completed.duplicate()
     result["hints_used"] = max(0, int(data.get("hints_used", 0)))
-    for key in ["stats", "achievements", "daily_challenges", "lives"]:
+    for key in ["stats", "achievements", "daily_challenges", "streak", "lives"]:
         var value = data.get(key, {})
         if typeof(value) == TYPE_DICTIONARY:
             result[key] = value.duplicate(true)
@@ -43,7 +44,7 @@ static func load_progress() -> Dictionary:
         result["settings"] = defaults["settings"].merged(settings)
     return result
 
-static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}, achievements: Dictionary = {}, settings: Dictionary = {}, daily_challenges: Dictionary = {}, lives: Dictionary = {}) -> bool:
+static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}, achievements: Dictionary = {}, settings: Dictionary = {}, daily_challenges: Dictionary = {}, lives: Dictionary = {}, streak: Dictionary = {}) -> bool:
     var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
     if file == null:
         return false
@@ -56,6 +57,7 @@ static func save_progress(current_level: int, completed_levels: Array, hints_use
         "stats": stats.duplicate(true),
         "achievements": achievements.duplicate(true),
         "daily_challenges": daily_challenges.duplicate(true),
+        "streak": streak.duplicate(true) if not streak.is_empty() else defaults["streak"],
         "lives": lives.duplicate(true) if not lives.is_empty() else defaults["lives"],
         "settings": defaults["settings"].merged(settings)
     }
