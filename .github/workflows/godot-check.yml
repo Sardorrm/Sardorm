@@ -13,23 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate project files and puzzle data
         run: |
-          test -f project.godot
-          test -f src/main.gd
-          test -f src/puzzle_engine.gd
-          test -f src/puzzle_definition.gd
-          test -f src/puzzle_repository.gd
-          test -f src/level_manager.gd
-          test -f src/save_manager.gd
-          test -f src/stats_manager.gd
-          test -f src/game_session.gd
-          test -f src/game_rules.gd
-          test -f src/difficulty_manager.gd
-          test -f src/achievement_manager.gd
-          test -f src/event_tracker.gd
-          test -f src/puzzle_result.gd
-          test -f src/progression_service.gd
-          test -f src/answer_input_factory.gd
-          test -f src/MainScene.tscn
+          set -e
+          for f in project.godot src/main.gd src/puzzle_engine.gd src/puzzle_definition.gd src/puzzle_repository.gd src/level_manager.gd src/save_manager.gd src/stats_manager.gd src/game_session.gd src/game_rules.gd src/difficulty_manager.gd src/achievement_manager.gd src/event_tracker.gd src/puzzle_result.gd src/progression_service.gd src/answer_input_factory.gd src/puzzle_interaction.gd src/daily_challenge.gd src/daily_challenge_service.gd src/life_manager.gd src/streak_manager.gd src/MainScene.tscn; do test -f "$f"; done
           python3 -m json.tool data/puzzles.json >/dev/null
           python3 - <<'PY'
           import json
@@ -40,12 +25,15 @@ jobs:
           required = {'id','category','difficulty','prompt','answer','hint'}
           assert all(required <= p.keys() for p in puzzles)
           ids = [p['id'] for p in puzzles]
+          prompts = [p['prompt'].strip().lower() for p in puzzles]
           assert len(ids) == len(set(ids))
+          assert len(prompts) == len(set(prompts))
           assert all(1 <= int(p['difficulty']) <= 5 for p in puzzles)
           types = {p.get('answer_type', 'number' if isinstance(p['answer'], (int, float)) else 'text') for p in puzzles}
           assert {'number', 'text', 'choice', 'true_false'} <= types
           assert all(p.get('explanation', '').strip() for p in puzzles)
-          print(f'Validated {len(puzzles)} puzzles, all answer types, and learning explanations')
+          assert all(isinstance(p.get('tags', []), list) for p in puzzles)
+          print(f'Validated {len(puzzles)} puzzles and gameplay content contracts')
           PY
       - name: Parse project with Godot
         run: |
