@@ -39,6 +39,9 @@ class PuzzleIntegrityTests(unittest.TestCase):
                 self.assertTrue(puzzle["answers"])
             if "time_limit_seconds" in puzzle:
                 self.assertGreater(puzzle["time_limit_seconds"], 0)
+            if "explanation" in puzzle:
+                self.assertIsInstance(puzzle["explanation"], str)
+                self.assertTrue(puzzle["explanation"].strip())
             ids.append(puzzle["id"])
             prompts.append(puzzle["prompt"].strip().lower())
         self.assertEqual(len(ids), len(set(ids)), "Duplicate puzzle IDs")
@@ -60,22 +63,14 @@ class PuzzleIntegrityTests(unittest.TestCase):
 
     def test_runtime_architecture_files_exist(self):
         for path in [
-            ROOT / "src/puzzle_engine.gd",
-            ROOT / "src/puzzle_definition.gd",
-            ROOT / "src/puzzle_repository.gd",
-            ROOT / "src/game_session.gd",
-            ROOT / "src/puzzle_result.gd",
-            ROOT / "src/progression_service.gd",
-            ROOT / "src/daily_challenge.gd",
-            ROOT / "src/puzzle_interaction.gd",
-            ROOT / "src/level_manager.gd",
-            ROOT / "src/save_manager.gd",
-            ROOT / "src/stats_manager.gd",
-            ROOT / "src/event_tracker.gd",
-            ROOT / "src/achievement_manager.gd",
-            ROOT / "src/game_rules.gd",
-            ROOT / "src/difficulty_manager.gd",
-            ROOT / "src/main.gd",
+            ROOT / "src/puzzle_engine.gd", ROOT / "src/puzzle_definition.gd",
+            ROOT / "src/puzzle_repository.gd", ROOT / "src/game_session.gd",
+            ROOT / "src/puzzle_result.gd", ROOT / "src/progression_service.gd",
+            ROOT / "src/daily_challenge.gd", ROOT / "src/puzzle_interaction.gd",
+            ROOT / "src/level_manager.gd", ROOT / "src/save_manager.gd",
+            ROOT / "src/stats_manager.gd", ROOT / "src/event_tracker.gd",
+            ROOT / "src/achievement_manager.gd", ROOT / "src/game_rules.gd",
+            ROOT / "src/difficulty_manager.gd", ROOT / "src/main.gd",
         ]:
             self.assertTrue(path.exists(), path)
 
