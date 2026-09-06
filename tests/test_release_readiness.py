@@ -10,9 +10,10 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertTrue((ROOT / "docs" / "RELEASE_READINESS.md").exists())
 
     def test_puzzle_library_has_required_metadata(self):
-        data = json.loads((ROOT / "data" / "puzzles.json").read_text(encoding="utf-8"))
-        puzzles = data["puzzles"]
-        self.assertGreaterEqual(len(puzzles), 35)
+        base = json.loads((ROOT / "data" / "puzzles.json").read_text(encoding="utf-8"))
+        extra = json.loads((ROOT / "data" / "puzzles_extra.json").read_text(encoding="utf-8"))
+        puzzles = base["puzzles"] + extra["puzzles"]
+        self.assertGreaterEqual(len(puzzles), 100)
         for puzzle in puzzles:
             self.assertTrue(puzzle.get("id"))
             self.assertTrue(puzzle.get("prompt"))
@@ -24,9 +25,9 @@ class ReleaseReadinessTests(unittest.TestCase):
 
     def test_android_project_is_portrait(self):
         project = (ROOT / "project.godot").read_text(encoding="utf-8")
-        self.assertIn('display/window/handheld/orientation=1', project)
-        self.assertIn('display/window/size/viewport_width=720', project)
-        self.assertIn('display/window/size/viewport_height=1280', project)
+        self.assertIn('handheld/orientation=1', project)
+        self.assertIn('size/viewport_width=720', project)
+        self.assertIn('size/viewport_height=1280', project)
 
 
 if __name__ == "__main__":
