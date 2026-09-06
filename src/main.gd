@@ -11,6 +11,7 @@ var progression := ProgressionService.new()
 var daily := DailyChallengeService.new()
 var streak := StreakManager.new()
 var lives := LifeManager.new()
+var settings := {"sound": true, "haptics": true}
 var current_index := 0
 var active_puzzle: PuzzleDefinition
 var root_ui: Control
@@ -31,6 +32,7 @@ func _ready() -> void:
         push_error("Could not load puzzle repository: " + repository.last_error)
         return
     var save_data := SaveManager.load_progress()
+    settings = {"sound": true, "haptics": true}.merged(save_data.get("settings", {}))
     stats.load_from_dict(save_data.get("stats", {}))
     achievements.load_from_dict(save_data.get("achievements", {}))
     level_manager.setup(engine, save_data)
@@ -331,52 +333,9 @@ func _show_daily() -> void:
     var puzzles := daily.get_puzzles()
     content.add_child(_label("BUGUNGI CHALLENGE", 32))
     content.add_child(_label("%s • %d ta puzzle" % [daily.current_date, puzzles.size()], 18))
-    content.add_child(_label("🔥 Streak: %d • Rekord: %d" % [streak.current_streak, streak.best_streak], 17))
-    if daily.is_completed():
-        content.add_child(_label("✓ Bugungi challenge bajarilgan", 20))
-    else:
-        for i in range(puzzles.size()):
-            var p: PuzzleDefinition = puzzles[i] if puzzles[i] is PuzzleDefinition else PuzzleDefinition.from_dict(puzzles[i])
-            var marker := "✓" if i < daily.current_position else ""
-            content.add_child(_label("%d. %s %s" % [i + 1, p.prompt, marker], 17))
-        content.add_child(_button("DAVOM ETISH", _start_daily, 68))
+    content.add_child(_label("Progress: %d / %d" % [daily.current_position, puzzles.size()], 18))
+    content.add_child(_button("BOSHLASH / DAVOM ETISH", _start_daily, 68))
     content.add_child(_button("ORTGA", _show_home))
-
-func _on_timer_tick() -> void:
-    if puzzle_finished or active_puzzle == null or session.state != GameSession.STATE_ACTIVE or session.paused or timer_label == null:
-        return
-    if session.check_timeout():
-        _handle_timeout()
-        return
-    var remaining := maxi(0, int(ceil(session.get_remaining_seconds())))
-    timer_label.text = "⏱ %ds" % remaining
-
-func _handle_timeout() -> void:
-    if puzzle_finished:
-        return
-    puzzle_finished = true
-    timer_tick.stop()
-    var elapsed := session.get_elapsed_seconds()
-    progression.record_attempt(active_puzzle, false, elapsed, session.attempts, session.hints_used > 0, not daily_mode)
-    lives.lose_life()
-    if daily_mode:
-        daily.record_failed()
-    events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": false, "timeout": true, "daily": daily_mode})
-    _save()
-    _show_timeout()
-
-func _show_timeout() -> void:
-    _clear_content()
-    content.add_child(_label("⏱ VAQT TUGADI", 34))
-    content.add_child(_label("Bu safar ulgurmadingiz. ❤️ -1", 20))
-    content.add_child(_label("Javobni tushunib olish ham g‘alabaning bir qismi.", 17))
-    if lives.is_empty():
-        content.add_child(_button("JONLAR TUGADI", _show_lives_empty, 68))
-    elif daily_mode:
-        daily_position = daily.current_position
-        content.add_child(_button("DAILY DAVOM ETISH", _show_daily_puzzle, 68))
-    else:
-        content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
 
 func _show_stats() -> void:
     _clear_content()
@@ -424,8 +383,22 @@ func _show_settings() -> void:
     _clear_content()
     content.add_child(_label("SOZLAMALAR", 34))
     content.add_child(_label("MindShift offline ishlaydi.\nProgress qurilmada saqlanadi.", 18))
+    var sound_text := "🔊 OVOZ: YOQILGAN" if settings.sound else "🔇 OVOZ: O‘CHIRILGAN"
+    var haptics_text := "📳 VIBRATSIYA: YOQILGAN" if settings.haptics else "📳 VIBRATSIYA: O‘CHIRILGAN"
+    content.add_child(_button(sound_text, _toggle_sound, 60))
+    content.add_child(_button(haptics_text, _toggle_haptics, 60))
     content.add_child(_button("PROGRESSNI TOZALASH", _reset_progress, 60))
     content.add_child(_button("ORTGA", _show_home))
+
+func _toggle_sound() -> void:
+    settings.sound = not settings.sound
+    _save()
+    _show_settings()
+
+func _toggle_haptics() -> void:
+    settings.haptics = not settings.haptics
+    _save()
+    _show_settings()
 
 func _reset_progress() -> void:
     SaveManager.clear_progress()
@@ -435,4 +408,40 @@ func _on_achievement_unlocked(achievement_id: String) -> void:
     events.record("achievement_unlocked", {"id": achievement_id})
 
 func _save() -> void:
-    SaveManager.save_progress(level_manager.current_level, level_manager.completed_levels, stats.hints, stats.to_dict(), achievements.to_dict(), {}, daily.to_dict(), lives.to_dict(), streak.to_dict())
+    SaveManager.save_progress(level_manager.current_level, level_manager.completed_levels, stats.hints, stats.to_dict(), achievements.to_dict(), settings, daily.to_dict(), lives.to_dict(), streak.to_dict())
+
+func _on_timer_tick() -> void:
+    if active_puzzle == null or puzzle_finished or session.paused:
+        return
+    if session.is_timed_out():
+        _handle_timeout()
+        return
+    var remaining := maxi(0, int(ceil(session.get_remaining_seconds())))
+    timer_label.text = "⏱ %ds" % remaining
+
+func _handle_timeout() -> void:
+    if puzzle_finished:
+        return
+    puzzle_finished = true
+    timer_tick.stop()
+    var elapsed := session.get_elapsed_seconds()
+    progression.record_attempt(active_puzzle, false, elapsed, session.attempts, session.hints_used > 0, not daily_mode)
+    lives.lose_life()
+    if daily_mode:
+        daily.record_failed()
+    events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": false, "timeout": true, "daily": daily_mode})
+    _save()
+    _show_timeout()
+
+func _show_timeout() -> void:
+    _clear_content()
+    content.add_child(_label("⏱ VAQT TUGADI", 34))
+    content.add_child(_label("Bu safar ulgurmadingiz. ❤️ -1", 20))
+    content.add_child(_label("Javobni tushunib olish ham g‘alabaning bir qismi.", 17))
+    if lives.is_empty():
+        content.add_child(_button("JONLAR TUGADI", _show_lives_empty, 68))
+    elif daily_mode:
+        daily_position = daily.current_position
+        content.add_child(_button("DAILY DAVOM ETISH", _show_daily_puzzle, 68))
+    else:
+        content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
