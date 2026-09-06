@@ -28,11 +28,18 @@ func load_from_file(path: String) -> bool:
         if id.is_empty() or ids.has(id):
             last_error = "Invalid or duplicate puzzle id: " + id
             return false
-        if int(puzzle["difficulty"]) < 1:
-            last_error = "Invalid difficulty for " + id
+        var difficulty := int(puzzle["difficulty"])
+        if difficulty < 1 or difficulty > 5:
+            last_error = "Difficulty must be 1..5 for " + id
             return false
         if str(puzzle["prompt"]).strip_edges().is_empty():
             last_error = "Empty prompt for " + id
+            return false
+        if str(puzzle["hint"]).strip_edges().is_empty():
+            last_error = "Empty hint for " + id
+            return false
+        if puzzle.has("answers") and typeof(puzzle["answers"]) == TYPE_ARRAY and puzzle["answers"].is_empty():
+            last_error = "answers cannot be empty for " + id
             return false
         ids[id] = true
     puzzles = incoming
@@ -66,12 +73,11 @@ func check_answer(index: int, answer: String) -> bool:
     return false
 
 func _answers_match(expected, actual: String) -> bool:
-    var expected_text := _normalize(str(expected))
     var actual_text := _normalize(actual)
     if expected is int or expected is float:
         var parsed = actual_text.to_float()
         return is_finite(parsed) and abs(parsed - float(expected)) < 0.0001
-    return expected_text == actual_text
+    return _normalize(str(expected)) == actual_text
 
 func _normalize(value: String) -> String:
     var text := value.strip_edges().to_lower()
