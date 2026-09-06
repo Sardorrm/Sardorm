@@ -138,6 +138,12 @@ class PuzzleIntegrityTests(unittest.TestCase):
         for token in ["record_daily_completion", "get_multiplier", "best_streak"]:
             self.assertIn(token, streak)
 
+    def test_game_session_pause_resume_contract(self):
+        code = (ROOT / "src/game_session.gd").read_text(encoding="utf-8")
+        for token in ["var paused := false", "func pause()", "func resume()", "paused_total_msec"]:
+            self.assertIn(token, code)
+        self.assertIn("paused_total_msec", code.split("func get_elapsed_seconds()", 1)[1])
+
 
 if __name__ == "__main__":
     unittest.main()
