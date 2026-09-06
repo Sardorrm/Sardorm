@@ -51,19 +51,36 @@ class PuzzleIntegrityTests(unittest.TestCase):
             for answer in candidates:
                 self.assertTrue(str(answer).strip(), puzzle["id"])
 
+    def test_difficulty_distribution_is_not_flat(self):
+        difficulties = {p["difficulty"] for p in PUZZLES}
+        self.assertEqual(difficulties, {1, 2, 3, 4, 5})
+
     def test_runtime_architecture_files_exist(self):
         for path in [
             ROOT / "src/puzzle_engine.gd",
             ROOT / "src/puzzle_definition.gd",
             ROOT / "src/puzzle_repository.gd",
             ROOT / "src/game_session.gd",
+            ROOT / "src/puzzle_result.gd",
+            ROOT / "src/progression_service.gd",
+            ROOT / "src/daily_challenge.gd",
             ROOT / "src/level_manager.gd",
             ROOT / "src/save_manager.gd",
             ROOT / "src/stats_manager.gd",
             ROOT / "src/event_tracker.gd",
+            ROOT / "src/achievement_manager.gd",
+            ROOT / "src/game_rules.gd",
+            ROOT / "src/difficulty_manager.gd",
             ROOT / "src/main.gd",
         ]:
             self.assertTrue(path.exists(), path)
+
+    def test_daily_challenge_is_deterministic(self):
+        code = (ROOT / "src/daily_challenge.gd").read_text(encoding="utf-8")
+        self.assertIn("class_name DailyChallenge", code)
+        self.assertIn("select_indices", code)
+        self.assertIn("seed_for_date", code)
+        self.assertEqual(len(set(p["category"] for p in PUZZLES)), 7)
 
 
 if __name__ == "__main__":
