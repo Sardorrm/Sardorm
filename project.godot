@@ -1,0 +1,22 @@
+; MindShift Godot 4 project
+; Created as the first runtime foundation for the mobile-first MVP.
+
+[application]
+config/name="MindShift"
+run/main_scene="res://src/Main.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+
+[display]
+
+[display/window]
+size/viewport_width=720
+size/viewport_height=1280
+size/window_width_override=360
+size/window_height_override=640
+stretch/mode="canvas_items"
+handheld/orientation=1
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.04, 0.04, 0.06, 1)
