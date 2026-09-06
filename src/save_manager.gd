@@ -2,7 +2,7 @@ class_name SaveManager
 extends RefCounted
 
 const SAVE_PATH := "user://mindshift_save.json"
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 
 static func _defaults() -> Dictionary:
     return {
@@ -10,7 +10,9 @@ static func _defaults() -> Dictionary:
         "current_level": 0,
         "completed_levels": [],
         "hints_used": 0,
-        "stats": {}
+        "stats": {},
+        "achievements": {},
+        "settings": {"sound": true, "haptics": true}
     }
 
 static func load_progress() -> Dictionary:
@@ -34,18 +36,27 @@ static func load_progress() -> Dictionary:
     var stats = data.get("stats", {})
     if typeof(stats) == TYPE_DICTIONARY:
         result["stats"] = stats.duplicate(true)
+    var achievements = data.get("achievements", {})
+    if typeof(achievements) == TYPE_DICTIONARY:
+        result["achievements"] = achievements.duplicate(true)
+    var settings = data.get("settings", {})
+    if typeof(settings) == TYPE_DICTIONARY:
+        result["settings"] = defaults["settings"].merged(settings)
     return result
 
-static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}) -> bool:
+static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}, achievements: Dictionary = {}, settings: Dictionary = {}) -> bool:
     var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
     if file == null:
         return false
+    var defaults := _defaults()
     var data := {
         "version": SAVE_VERSION,
         "current_level": max(0, current_level),
         "completed_levels": completed_levels.duplicate(),
         "hints_used": max(0, hints_used),
-        "stats": stats.duplicate(true)
+        "stats": stats.duplicate(true),
+        "achievements": achievements.duplicate(true),
+        "settings": defaults["settings"].merged(settings)
     }
     file.store_string(JSON.stringify(data))
     return file.get_error() == OK
