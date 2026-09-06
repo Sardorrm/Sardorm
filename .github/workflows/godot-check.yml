@@ -1,0 +1,23 @@
+name: Godot Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  project-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate project files
+        run: |
+          test -f project.godot
+          test -f src/main.gd
+          test -f src/puzzle_engine.gd
+          test -f src/save_manager.gd
+          test -f src/stats_manager.gd
+          test -f src/Main.tscn
+          python3 -m json.tool data/puzzles.json >/dev/null
+          echo "MindShift project structure OK"
