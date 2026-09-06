@@ -31,16 +31,29 @@ func get_puzzles() -> Array:
             result.append(repository.puzzles[index])
     return result
 
+func reset_progress() -> void:
+    completed_count = 0
+
+func record_solved() -> void:
+    completed_count = mini(CHALLENGE_SIZE, completed_count + 1)
+
 func is_completed() -> bool:
     return current_date in completed_dates
 
+func is_session_completed() -> bool:
+    return completed_count >= mini(CHALLENGE_SIZE, current_indices.size()) and not current_indices.is_empty()
+
 func mark_completed() -> void:
-    if not is_completed():
+    if is_session_completed() and not is_completed():
         completed_dates.append(current_date)
+
+func get_completed_dates_count() -> int:
+    return completed_dates.size()
 
 func to_dict() -> Dictionary:
     return {
         "date": current_date,
         "indices": current_indices.duplicate(),
+        "completed_count": completed_count,
         "completed_dates": completed_dates.duplicate()
     }
