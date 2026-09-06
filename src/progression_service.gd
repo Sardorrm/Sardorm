@@ -23,7 +23,7 @@ func record_hint(puzzle: PuzzleDefinition) -> void:
         event_tracker.record(EventTracker.HINT_USED, {"puzzle_id": puzzle.id, "category": puzzle.category})
     progression_changed.emit()
 
-func record_attempt(puzzle: PuzzleDefinition, correct: bool, elapsed: float, attempts: int, hint_used: bool) -> PuzzleResult:
+func record_attempt(puzzle: PuzzleDefinition, correct: bool, elapsed: float, attempts: int, hint_used: bool, mark_campaign_level: bool = true) -> PuzzleResult:
     var result := PuzzleResult.new()
     result.configure(puzzle, correct, elapsed, attempts, hint_used)
     if puzzle == null or stats_manager == null:
@@ -31,7 +31,7 @@ func record_attempt(puzzle: PuzzleDefinition, correct: bool, elapsed: float, att
 
     if correct:
         stats_manager.record_solved(elapsed, puzzle.category)
-        if level_manager != null:
+        if mark_campaign_level and level_manager != null:
             var level_index := _find_level_index(puzzle.id)
             if level_index >= 0:
                 level_manager.mark_completed(level_index)
