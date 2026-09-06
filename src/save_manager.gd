@@ -2,7 +2,7 @@ class_name SaveManager
 extends RefCounted
 
 const SAVE_PATH := "user://mindshift_save.json"
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 
 static func _defaults() -> Dictionary:
     return {
@@ -12,6 +12,8 @@ static func _defaults() -> Dictionary:
         "hints_used": 0,
         "stats": {},
         "achievements": {},
+        "daily_challenges": {},
+        "lives": {"lives": 3, "last_loss_unix": 0},
         "settings": {"sound": true, "haptics": true}
     }
 
@@ -25,7 +27,6 @@ static func load_progress() -> Dictionary:
     var data = JSON.parse_string(file.get_as_text())
     if typeof(data) != TYPE_DICTIONARY:
         return defaults
-
     var result := defaults.duplicate(true)
     result["version"] = SAVE_VERSION
     result["current_level"] = max(0, int(data.get("current_level", 0)))
@@ -33,18 +34,16 @@ static func load_progress() -> Dictionary:
     if typeof(completed) == TYPE_ARRAY:
         result["completed_levels"] = completed.duplicate()
     result["hints_used"] = max(0, int(data.get("hints_used", 0)))
-    var stats = data.get("stats", {})
-    if typeof(stats) == TYPE_DICTIONARY:
-        result["stats"] = stats.duplicate(true)
-    var achievements = data.get("achievements", {})
-    if typeof(achievements) == TYPE_DICTIONARY:
-        result["achievements"] = achievements.duplicate(true)
+    for key in ["stats", "achievements", "daily_challenges", "lives"]:
+        var value = data.get(key, {})
+        if typeof(value) == TYPE_DICTIONARY:
+            result[key] = value.duplicate(true)
     var settings = data.get("settings", {})
     if typeof(settings) == TYPE_DICTIONARY:
         result["settings"] = defaults["settings"].merged(settings)
     return result
 
-static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}, achievements: Dictionary = {}, settings: Dictionary = {}) -> bool:
+static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}, achievements: Dictionary = {}, settings: Dictionary = {}, daily_challenges: Dictionary = {}, lives: Dictionary = {}) -> bool:
     var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
     if file == null:
         return false
@@ -56,6 +55,8 @@ static func save_progress(current_level: int, completed_levels: Array, hints_use
         "hints_used": max(0, hints_used),
         "stats": stats.duplicate(true),
         "achievements": achievements.duplicate(true),
+        "daily_challenges": daily_challenges.duplicate(true),
+        "lives": lives.duplicate(true) if not lives.is_empty() else defaults["lives"],
         "settings": defaults["settings"].merged(settings)
     }
     file.store_string(JSON.stringify(data))
