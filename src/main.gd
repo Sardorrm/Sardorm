@@ -48,7 +48,13 @@ func _ready() -> void:
     timer_tick.timeout.connect(_on_timer_tick)
     add_child(timer_tick)
     _build_shell()
+    _apply_runtime_settings()
     _show_home()
+
+func _apply_runtime_settings() -> void:
+    var polish := get_node_or_null("/root/MindShiftUIPolish")
+    if polish != null and polish.has_method("set_haptics_enabled"):
+        polish.set_haptics_enabled(bool(settings.get("haptics", true)))
 
 func _unhandled_input(event: InputEvent) -> void:
     if not event.is_action_pressed("ui_cancel"):
@@ -341,62 +347,52 @@ func _show_stats() -> void:
     _clear_content()
     var profile := stats.get_profile()
     content.add_child(_label("STATISTIKA", 34))
-    content.add_child(_label("Yechilgan: %d\nXatolar: %d\nAniqlik: %.1f%%\nO‘rtacha vaqt: %.1fs\nJami ball: %d" % [stats.solved, stats.failed, stats.get_accuracy(), stats.get_average_time(), stats.total_score], 19))
-    content.add_child(_label("🔥 Daily streak: %d\n🏆 Rekord: %d" % [streak.current_streak, streak.best_streak], 19))
-    content.add_child(_label("🧠 Profil: %s (%.0f/100)" % [profile.name, profile.score], 20))
-    content.add_child(_button("YUTUQLAR", _show_achievements))
+    content.add_child(_label("Profil: %s" % str(profile.get("name", "Yangi fikrlovchi")), 21))
+    content.add_child(_label("Profil balli: %.1f" % float(profile.get("score", 0.0)), 18))
+    content.add_child(_label("Yechilgan: %d" % stats.solved, 18))
+    content.add_child(_label("Xatolar: %d" % stats.failed, 18))
+    content.add_child(_label("Aniqlik: %.1f%%" % stats.get_accuracy(), 18))
+    content.add_child(_label("O‘rtacha vaqt: %.1f s" % stats.get_average_time(), 18))
+    content.add_child(_label("Hintlar: %d" % stats.hints, 18))
+    content.add_child(_label("Jami ball: %d" % stats.total_score, 18))
     content.add_child(_button("ORTGA", _show_home))
 
 func _show_achievements() -> void:
     _clear_content()
     content.add_child(_label("YUTUQLAR", 34))
-    var unlocked_count := 0
+    content.add_child(_label("Ochilgan: %d / %d" % [achievements.unlocked.size(), AchievementManager.DEFINITIONS.size()], 18))
     for definition in AchievementManager.DEFINITIONS:
-        if achievements.is_unlocked(str(definition.id)):
-            unlocked_count += 1
-    content.add_child(_label("Ochilgan: %d / %d" % [unlocked_count, AchievementManager.DEFINITIONS.size()], 18))
-    var scroll := ScrollContainer.new()
-    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    content.add_child(scroll)
-    var list := VBoxContainer.new()
-    list.add_theme_constant_override("separation", 10)
-    scroll.add_child(list)
-    for definition in AchievementManager.DEFINITIONS:
-        var id := str(definition.id)
-        var unlocked := achievements.is_unlocked(id)
-        var marker := "🏆" if unlocked else "🔒"
-        var state := "OCHILGAN" if unlocked else "YOPIQ"
-        var text := "%s %s\n%s\n%s" % [marker, str(definition.name), str(definition.description), state]
-        var card := _label(text, 17)
-        card.custom_minimum_size = Vector2(0, 82)
-        list.add_child(card)
+        var id := str(definition.get("id", ""))
+        var marker := "✓" if achievements.is_unlocked(id) else "🔒"
+        content.add_child(_label("%s %s\n%s" % [marker, definition.get("name", ""), definition.get("description", "")], 16))
     content.add_child(_button("ORTGA", _show_home))
 
 func _achievement_names(ids: Array) -> String:
     var names: Array = []
     for definition in AchievementManager.DEFINITIONS:
-        if ids.has(str(definition.id)):
-            names.append(str(definition.name))
+        if ids.has(definition.get("id", "")):
+            names.append(str(definition.get("name", "")))
     return ", ".join(names)
 
 func _show_settings() -> void:
     _clear_content()
     content.add_child(_label("SOZLAMALAR", 34))
     content.add_child(_label("MindShift offline ishlaydi.\nProgress qurilmada saqlanadi.", 18))
-    var sound_text := "🔊 OVOZ: YOQILGAN" if settings.sound else "🔇 OVOZ: O‘CHIRILGAN"
-    var haptics_text := "📳 VIBRATSIYA: YOQILGAN" if settings.haptics else "📳 VIBRATSIYA: O‘CHIRILGAN"
+    var sound_text := "🔊 OVOZ: YOQILGAN" if bool(settings.get("sound", true)) else "🔇 OVOZ: O‘CHIRILGAN"
+    var haptics_text := "📳 VIBRATSIYA: YOQILGAN" if bool(settings.get("haptics", true)) else "📳 VIBRATSIYA: O‘CHIRILGAN"
     content.add_child(_button(sound_text, _toggle_sound, 60))
     content.add_child(_button(haptics_text, _toggle_haptics, 60))
     content.add_child(_button("PROGRESSNI TOZALASH", _reset_progress, 60))
     content.add_child(_button("ORTGA", _show_home))
 
 func _toggle_sound() -> void:
-    settings.sound = not settings.sound
+    settings["sound"] = not bool(settings.get("sound", true))
     _save()
     _show_settings()
 
 func _toggle_haptics() -> void:
-    settings.haptics = not settings.haptics
+    settings["haptics"] = not bool(settings.get("haptics", true))
+    _apply_runtime_settings()
     _save()
     _show_settings()
 
@@ -411,7 +407,7 @@ func _save() -> void:
     SaveManager.save_progress(level_manager.current_level, level_manager.completed_levels, stats.hints, stats.to_dict(), achievements.to_dict(), settings, daily.to_dict(), lives.to_dict(), streak.to_dict())
 
 func _on_timer_tick() -> void:
-    if active_puzzle == null or puzzle_finished or session.paused:
+    if active_puzzle == null or puzzle_finished or session.paused or timer_label == null:
         return
     if session.is_timed_out():
         _handle_timeout()
