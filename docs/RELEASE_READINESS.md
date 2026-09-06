@@ -1,0 +1,62 @@
+# MindShift Release Readiness
+
+## Product pillars
+
+- [x] Core puzzle loop
+- [x] Four answer modes: text, number, choice, true/false
+- [x] Difficulty tiers 1–5
+- [x] Hints and explanations
+- [x] Campaign progression
+- [x] Daily Challenge
+- [x] Daily progress resume
+- [x] Daily streak rewards
+- [x] Lives
+- [x] Persistent statistics
+- [x] Achievements
+- [x] Deterministic puzzle repository
+
+## Content quality gates
+
+- [x] Unique puzzle IDs
+- [x] Non-empty prompts and answers
+- [x] Explanation for every puzzle
+- [x] Difficulty metadata
+- [x] Category/tag metadata
+- [x] Multiple interaction types
+- [ ] Expand production puzzle library to 100+
+- [ ] Review every puzzle for ambiguity and localization
+- [ ] Balance difficulty progression using playtest data
+
+## Mobile UX gates
+
+- [x] Portrait-first 720×1280 design
+- [x] 360×640 viewport override
+- [x] Touch-oriented answer controls
+- [x] Timer and progress feedback
+- [ ] Final safe-area/device testing
+- [ ] Visual polish pass
+- [ ] Accessibility pass: text size, contrast, touch targets
+- [ ] Back/pause/resume behavior review
+
+## Technical release gates
+
+- [x] Automated JSON/content validation
+- [x] Python contract tests
+- [x] Godot headless project validation workflow
+- [ ] Full Godot runtime test on device/emulator
+- [ ] Save migration test across previous versions
+- [ ] Final performance/memory check
+- [ ] Release build/export verification
+
+## Store readiness
+
+- [ ] App icon
+- [ ] Feature graphic
+- [ ] Screenshots
+- [ ] Store description
+- [ ] Privacy policy URL if analytics/online services are enabled
+- [ ] Final package ID/version strategy
+
+## Definition of done
+
+MindShift is release-ready when all unchecked release gates are completed and a clean build has been verified through the complete campaign, daily challenge, save/load, lives, hints, achievements, and statistics flows on a real Android device.
