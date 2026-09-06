@@ -4,8 +4,9 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = json.loads((ROOT / "data/puzzles.json").read_text(encoding="utf-8"))
-PUZZLES = DATA["puzzles"]
+BASE = json.loads((ROOT / "data/puzzles.json").read_text(encoding="utf-8"))
+EXTRA = json.loads((ROOT / "data/puzzles_extra.json").read_text(encoding="utf-8"))
+PUZZLES = BASE["puzzles"] + EXTRA["puzzles"]
 REQUIRED = {"id", "category", "difficulty", "prompt", "answer", "hint"}
 ALLOWED_ANSWER_TYPES = {"text", "number", "choice", "true_false"}
 
@@ -13,7 +14,7 @@ ALLOWED_ANSWER_TYPES = {"text", "number", "choice", "true_false"}
 class PuzzleIntegrityTests(unittest.TestCase):
     def test_puzzle_schema_and_ids(self):
         self.assertIsInstance(PUZZLES, list)
-        self.assertGreaterEqual(len(PUZZLES), 35)
+        self.assertGreaterEqual(len(PUZZLES), 100)
         ids, prompts = [], []
         for puzzle in PUZZLES:
             self.assertTrue(REQUIRED.issubset(puzzle), puzzle)
@@ -52,6 +53,7 @@ class PuzzleIntegrityTests(unittest.TestCase):
 
     def test_difficulty_distribution_is_not_flat(self):
         self.assertEqual({p["difficulty"] for p in PUZZLES}, {1, 2, 3, 4, 5})
+        self.assertGreaterEqual(sum(p["difficulty"] == 5 for p in PUZZLES), 10)
 
     def test_answer_type_distribution_is_not_flat(self):
         types = {p.get("answer_type", "number" if isinstance(p["answer"], (int, float)) else "text") for p in PUZZLES}
