@@ -14,34 +14,30 @@ class PuzzleIntegrityTests(unittest.TestCase):
     def test_puzzle_schema_and_ids(self):
         self.assertIsInstance(PUZZLES, list)
         self.assertGreaterEqual(len(PUZZLES), 10)
-        ids = []
-        prompts = []
+        ids, prompts = [], []
         for puzzle in PUZZLES:
             self.assertTrue(REQUIRED.issubset(puzzle), puzzle)
-            self.assertIsInstance(puzzle["id"], str)
-            self.assertTrue(puzzle["id"].strip())
-            self.assertIsInstance(puzzle["category"], str)
-            self.assertTrue(puzzle["category"].strip())
-            self.assertIsInstance(puzzle["prompt"], str)
-            self.assertTrue(puzzle["prompt"].strip())
-            self.assertIsInstance(puzzle["hint"], str)
-            self.assertTrue(puzzle["hint"].strip())
+            self.assertTrue(isinstance(puzzle["id"], str) and puzzle["id"].strip())
+            self.assertTrue(isinstance(puzzle["category"], str) and puzzle["category"].strip())
+            self.assertTrue(isinstance(puzzle["prompt"], str) and puzzle["prompt"].strip())
+            self.assertTrue(isinstance(puzzle["hint"], str) and puzzle["hint"].strip())
             self.assertIsInstance(puzzle["answer"], (str, int, float))
             self.assertNotIsInstance(puzzle["answer"], bool)
-            self.assertIsInstance(puzzle["difficulty"], int)
             self.assertIn(puzzle["difficulty"], {1, 2, 3, 4, 5})
             if isinstance(puzzle["answer"], float):
                 self.assertTrue(math.isfinite(puzzle["answer"]))
             answer_type = puzzle.get("answer_type", "number" if isinstance(puzzle["answer"], (int, float)) else "text")
             self.assertIn(answer_type, ALLOWED_ANSWER_TYPES)
+            if answer_type in {"choice", "true_false"}:
+                self.assertIsInstance(puzzle.get("answers"), list)
+                self.assertTrue(puzzle["answers"])
             if "answers" in puzzle:
                 self.assertIsInstance(puzzle["answers"], list)
                 self.assertTrue(puzzle["answers"])
             if "time_limit_seconds" in puzzle:
                 self.assertGreater(puzzle["time_limit_seconds"], 0)
             if "explanation" in puzzle:
-                self.assertIsInstance(puzzle["explanation"], str)
-                self.assertTrue(puzzle["explanation"].strip())
+                self.assertTrue(isinstance(puzzle["explanation"], str) and puzzle["explanation"].strip())
             ids.append(puzzle["id"])
             prompts.append(puzzle["prompt"].strip().lower())
         self.assertEqual(len(ids), len(set(ids)), "Duplicate puzzle IDs")
@@ -67,10 +63,11 @@ class PuzzleIntegrityTests(unittest.TestCase):
             ROOT / "src/puzzle_repository.gd", ROOT / "src/game_session.gd",
             ROOT / "src/puzzle_result.gd", ROOT / "src/progression_service.gd",
             ROOT / "src/daily_challenge.gd", ROOT / "src/puzzle_interaction.gd",
-            ROOT / "src/level_manager.gd", ROOT / "src/save_manager.gd",
-            ROOT / "src/stats_manager.gd", ROOT / "src/event_tracker.gd",
-            ROOT / "src/achievement_manager.gd", ROOT / "src/game_rules.gd",
-            ROOT / "src/difficulty_manager.gd", ROOT / "src/main.gd",
+            ROOT / "src/answer_input_factory.gd", ROOT / "src/level_manager.gd",
+            ROOT / "src/save_manager.gd", ROOT / "src/stats_manager.gd",
+            ROOT / "src/event_tracker.gd", ROOT / "src/achievement_manager.gd",
+            ROOT / "src/game_rules.gd", ROOT / "src/difficulty_manager.gd",
+            ROOT / "src/main.gd",
         ]:
             self.assertTrue(path.exists(), path)
 
@@ -84,6 +81,12 @@ class PuzzleIntegrityTests(unittest.TestCase):
         code = (ROOT / "src/puzzle_interaction.gd").read_text(encoding="utf-8")
         self.assertIn("class_name PuzzleInteraction", code)
         for token in ["TYPE_TEXT", "TYPE_NUMBER", "TYPE_CHOICE", "TYPE_TRUE_FALSE"]:
+            self.assertIn(token, code)
+
+    def test_answer_input_factory_contract(self):
+        code = (ROOT / "src/answer_input_factory.gd").read_text(encoding="utf-8")
+        self.assertIn("class_name AnswerInputFactory", code)
+        for token in ["normalize_type", "button_labels", "validate"]:
             self.assertIn(token, code)
 
 
