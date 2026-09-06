@@ -29,6 +29,15 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertIn('size/viewport_width=720', project)
         self.assertIn('size/viewport_height=1280', project)
 
+    def test_mobile_theme_is_configured(self):
+        project = (ROOT / "project.godot").read_text(encoding="utf-8")
+        self.assertIn('theme/custom="res://themes/mindshift_theme.tres"', project)
+        theme = ROOT / "themes" / "mindshift_theme.tres"
+        self.assertTrue(theme.exists())
+        theme_text = theme.read_text(encoding="utf-8")
+        for token in ["Button/styles/normal", "Button/styles/hover", "LineEdit/styles/normal", "Panel/styles/panel"]:
+            self.assertIn(token, theme_text)
+
 
 if __name__ == "__main__":
     unittest.main()
