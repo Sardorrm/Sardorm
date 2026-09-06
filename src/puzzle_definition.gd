@@ -1,0 +1,58 @@
+class_name PuzzleDefinition
+extends RefCounted
+
+var id: String
+var category: String
+var difficulty: int
+var prompt: String
+var hint: String
+var answer
+var answers: Array = []
+var answer_type: String
+var time_limit_seconds: float
+var tags: Array = []
+
+static func from_dict(data: Dictionary) -> PuzzleDefinition:
+    var puzzle := PuzzleDefinition.new()
+    puzzle.id = str(data.get("id", ""))
+    puzzle.category = str(data.get("category", ""))
+    puzzle.difficulty = int(data.get("difficulty", 1))
+    puzzle.prompt = str(data.get("prompt", ""))
+    puzzle.hint = str(data.get("hint", ""))
+    puzzle.answer = data.get("answer", "")
+    if typeof(data.get("answers", [])) == TYPE_ARRAY:
+        puzzle.answers = data.get("answers", []).duplicate()
+    puzzle.answer_type = str(data.get("answer_type", _infer_answer_type(puzzle.answer)))
+    puzzle.time_limit_seconds = max(0.0, float(data.get("time_limit_seconds", 0.0)))
+    if typeof(data.get("tags", [])) == TYPE_ARRAY:
+        puzzle.tags = data.get("tags", []).duplicate()
+    return puzzle
+
+func get_answers() -> Array:
+    return answers if not answers.is_empty() else [answer]
+
+func is_timed() -> bool:
+    return time_limit_seconds > 0.0
+
+func to_dict() -> Dictionary:
+    var result := {
+        "id": id,
+        "category": category,
+        "difficulty": difficulty,
+        "prompt": prompt,
+        "answer": answer,
+        "hint": hint,
+        "answer_type": answer_type
+    }
+    if not answers.is_empty():
+        result["answers"] = answers.duplicate()
+    if time_limit_seconds > 0.0:
+        result["time_limit_seconds"] = time_limit_seconds
+    if not tags.is_empty():
+        result["tags"] = tags.duplicate()
+    return result
+
+static func _infer_answer_type(value) -> String:
+    if value is int or value is float:
+        return "number"
+    return "text"
