@@ -38,6 +38,15 @@ class ReleaseReadinessTests(unittest.TestCase):
         for token in ["Button/styles/normal", "Button/styles/hover", "LineEdit/styles/normal", "Panel/styles/panel"]:
             self.assertIn(token, theme_text)
 
+    def test_result_feedback_contract(self):
+        code = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        polish = (ROOT / "src" / "ui_polish.gd").read_text(encoding="utf-8")
+        self.assertIn("result.score", code)
+        self.assertIn("result.stars", code)
+        self.assertIn("session.get_elapsed_seconds()", code)
+        self.assertIn("✓ TO‘G‘RI!", code)
+        self.assertIn("_polish_feedback", polish)
+
 
 if __name__ == "__main__":
     unittest.main()
