@@ -6,6 +6,7 @@ var category: String
 var difficulty: int
 var prompt: String
 var hint: String
+var explanation: String
 var answer
 var answers: Array = []
 var answer_type: String
@@ -16,9 +17,10 @@ static func from_dict(data: Dictionary) -> PuzzleDefinition:
     var puzzle := PuzzleDefinition.new()
     puzzle.id = str(data.get("id", ""))
     puzzle.category = str(data.get("category", ""))
-    puzzle.difficulty = int(data.get("difficulty", 1))
+    puzzle.difficulty = clampi(int(data.get("difficulty", 1)), 1, 5)
     puzzle.prompt = str(data.get("prompt", ""))
     puzzle.hint = str(data.get("hint", ""))
+    puzzle.explanation = str(data.get("explanation", ""))
     puzzle.answer = data.get("answer", "")
     if typeof(data.get("answers", [])) == TYPE_ARRAY:
         puzzle.answers = data.get("answers", []).duplicate()
@@ -34,6 +36,9 @@ func get_answers() -> Array:
 func is_timed() -> bool:
     return time_limit_seconds > 0.0
 
+func has_explanation() -> bool:
+    return not explanation.strip_edges().is_empty()
+
 func to_dict() -> Dictionary:
     var result := {
         "id": id,
@@ -44,6 +49,8 @@ func to_dict() -> Dictionary:
         "hint": hint,
         "answer_type": answer_type
     }
+    if has_explanation():
+        result["explanation"] = explanation
     if not answers.is_empty():
         result["answers"] = answers.duplicate()
     if time_limit_seconds > 0.0:
