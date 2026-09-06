@@ -129,22 +129,7 @@ func reset() -> void:
     _set_state(STATE_IDLE)
 
 func _matches_answer(value: String) -> bool:
-    if puzzle == null:
-        return false
-    for expected in puzzle.get_answers():
-        if expected is int or expected is float:
-            var parsed := value.strip_edges().to_float()
-            if is_finite(parsed) and abs(parsed - float(expected)) < 0.0001:
-                return true
-        elif _normalize(str(expected)) == _normalize(value):
-            return true
-    return false
-
-func _normalize(value: String) -> String:
-    var text := value.strip_edges().to_lower()
-    while text.contains("  "):
-        text = text.replace("  ", " ")
-    return text
+    return PuzzleInteraction.validate_selection(puzzle, value)
 
 func _set_state(next_state: String) -> void:
     state = next_state
