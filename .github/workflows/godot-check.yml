@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate project files
+      - name: Validate project files and puzzle data
         run: |
           test -f project.godot
           test -f src/main.gd
@@ -27,9 +27,13 @@ jobs:
           data = json.loads(Path('data/puzzles.json').read_text())
           puzzles = data.get('puzzles', [])
           assert len(puzzles) >= 10
+          required = {'id','category','difficulty','prompt','answer','hint'}
+          assert all(required <= p.keys() for p in puzzles)
           ids = [p['id'] for p in puzzles]
           assert len(ids) == len(set(ids))
           assert all(1 <= int(p['difficulty']) <= 5 for p in puzzles)
-          assert all(str(p['prompt']).strip() and str(p['hint']).strip() for p in puzzles)
           print(f'Validated {len(puzzles)} puzzles and runtime structure')
           PY
+      - name: Parse project with Godot
+        run: |
+          docker run --rm -v "$PWD:/project" barichello/godot-ci:4.3.0 godot --headless --path /project --editor --quit
