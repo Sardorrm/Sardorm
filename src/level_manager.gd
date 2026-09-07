@@ -8,17 +8,27 @@ var current_level: int = 0
 func setup(engine: PuzzleEngine, save_data: Dictionary = {}) -> void:
     puzzle_engine = engine
     completed_levels = _sanitize_completed(save_data.get("completed_levels", []))
-    current_level = clamp(int(save_data.get("current_level", 0)), 0, max(0, puzzle_engine.puzzles.size() - 1))
+    var max_index := max(0, puzzle_engine.puzzles.size() - 1)
+    var requested_level := clamp(int(save_data.get("current_level", 0)), 0, max_index)
+    # Never restore a current level beyond the sequentially unlocked frontier.
+    current_level = mini(requested_level, completed_levels.size())
 
 func _sanitize_completed(value) -> Array:
-    var result: Array = []
+    var valid: Dictionary = {}
     if typeof(value) != TYPE_ARRAY:
-        return result
+        return []
     for item in value:
         var index := int(item)
-        if index >= 0 and index < puzzle_engine.puzzles.size() and not result.has(index):
-            result.append(index)
-    result.sort()
+        if index >= 0 and index < puzzle_engine.puzzles.size():
+            valid[index] = true
+
+    # Campaign unlocks are sequential. Ignore forged/corrupt later completions
+    # after the first missing level so a malformed save cannot skip content.
+    var result: Array = []
+    for index in range(puzzle_engine.puzzles.size()):
+        if not valid.has(index):
+            break
+        result.append(index)
     return result
 
 func get_level_count() -> int:
