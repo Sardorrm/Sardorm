@@ -12,6 +12,12 @@ class PuzzleCatalogValidatorTests(unittest.TestCase):
         self.assertIn("combined catalog: duplicate id", code)
         self.assertIn("combined catalog: duplicate prompt", code)
 
+    def test_validator_normalizes_duplicate_keys(self):
+        code = (ROOT / "scripts/validate_puzzles.py").read_text(encoding="utf-8")
+        self.assertIn("def normalize_id(value: object) -> str:", code)
+        self.assertIn("return str(value).strip().casefold()", code)
+        self.assertIn("normalized_id in all_ids", code)
+
     def test_runtime_packs_are_json_and_have_distinct_ids(self):
         base = json.loads((ROOT / "data/puzzles.json").read_text(encoding="utf-8"))
         extra = json.loads((ROOT / "data/puzzles_extra.json").read_text(encoding="utf-8"))
