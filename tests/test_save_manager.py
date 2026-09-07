@@ -23,6 +23,13 @@ class SaveManagerContractTests(unittest.TestCase):
         ]:
             self.assertIn(token, code)
 
+    def test_corrupt_or_unreadable_save_falls_back_to_defaults(self):
+        code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
+        self.assertIn("if file == null:", code)
+        self.assertIn("return defaults", code)
+        self.assertIn("if typeof(data) != TYPE_DICTIONARY:", code)
+        self.assertIn("var result := defaults.duplicate(true)", code)
+
     def test_new_progression_domains_are_persisted(self):
         code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
         for key in ["stats", "achievements", "daily_challenges", "streak", "lives", "settings"]:
