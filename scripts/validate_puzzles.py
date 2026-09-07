@@ -12,6 +12,14 @@ REQUIRED = ("id", "category", "difficulty", "prompt", "answer", "hint", "explana
 VALID_TYPES = {"text", "number", "choice", "true_false"}
 
 
+def normalize_id(value: object) -> str:
+    return str(value).strip().casefold()
+
+
+def normalize_text(value: object) -> str:
+    return str(value).strip().casefold()
+
+
 def validate(data: dict, *, source: str = "puzzles") -> list[str]:
     errors: list[str] = []
     puzzles = data.get("puzzles")
@@ -29,17 +37,18 @@ def validate(data: dict, *, source: str = "puzzles") -> list[str]:
             if field not in puzzle:
                 errors.append(f"{prefix}: missing {field}")
         pid = puzzle.get("id")
-        if not isinstance(pid, str) or not pid.strip():
+        normalized_id = normalize_id(pid)
+        if not isinstance(pid, str) or not normalized_id:
             errors.append(f"{prefix}: id must be a non-empty string")
-        elif pid in ids:
+        elif normalized_id in ids:
             errors.append(f"{prefix}: duplicate id {pid}")
         else:
-            ids.add(pid)
+            ids.add(normalized_id)
         prompt = puzzle.get("prompt")
         if not isinstance(prompt, str) or not prompt.strip():
             errors.append(f"{prefix} ({pid}): prompt must be non-empty text")
         else:
-            normalized_prompt = prompt.strip().casefold()
+            normalized_prompt = normalize_text(prompt)
             if normalized_prompt in prompts:
                 errors.append(f"{prefix} ({pid}): duplicate prompt")
             prompts.add(normalized_prompt)
@@ -67,16 +76,16 @@ def validate(data: dict, *, source: str = "puzzles") -> list[str]:
             if not isinstance(answers, list) or not answers:
                 errors.append(f"{prefix} ({pid}): answers must be a non-empty array")
             else:
-                normalized_answers = [str(value).strip().casefold() for value in answers]
+                normalized_answers = [normalize_text(value) for value in answers]
                 if any(not value for value in normalized_answers):
                     errors.append(f"{prefix} ({pid}): answers cannot contain empty values")
                 if len(normalized_answers) != len(set(normalized_answers)):
                     errors.append(f"{prefix} ({pid}): duplicate accepted answer")
-                if answer_type in {"choice", "true_false"} and str(answer).strip().casefold() not in normalized_answers:
+                if answer_type in {"choice", "true_false"} and normalize_text(answer) not in normalized_answers:
                     errors.append(f"{prefix} ({pid}): answer must be present in answers")
         if answer_type in {"choice", "true_false"} and not isinstance(answers, list):
             errors.append(f"{prefix} ({pid}): answer_type requires answers")
-        if answer_type == "true_false" and [str(v).strip().casefold() for v in (answers or [])] != ["true", "false"]:
+        if answer_type == "true_false" and [normalize_text(v) for v in (answers or [])] != ["true", "false"]:
             errors.append(f"{prefix} ({pid}): true_false answers must be exactly true,false")
 
     return errors
@@ -102,12 +111,13 @@ def main() -> int:
         for puzzle in data.get("puzzles", []) if isinstance(data.get("puzzles"), list) else []:
             pid = puzzle.get("id") if isinstance(puzzle, dict) else None
             prompt = puzzle.get("prompt") if isinstance(puzzle, dict) else None
-            if isinstance(pid, str) and pid in all_ids:
+            normalized_id = normalize_id(pid)
+            if isinstance(pid, str) and normalized_id in all_ids:
                 errors.append(f"combined catalog: duplicate id {pid}")
             elif isinstance(pid, str):
-                all_ids.add(pid)
+                all_ids.add(normalized_id)
             if isinstance(prompt, str):
-                normalized_prompt = prompt.strip().casefold()
+                normalized_prompt = normalize_text(prompt)
                 if normalized_prompt in all_prompts:
                     errors.append("combined catalog: duplicate prompt")
                 all_prompts.add(normalized_prompt)
