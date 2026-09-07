@@ -15,16 +15,18 @@ var tags: Array = []
 
 static func from_dict(data: Dictionary) -> PuzzleDefinition:
     var puzzle := PuzzleDefinition.new()
-    puzzle.id = str(data.get("id", ""))
-    puzzle.category = str(data.get("category", ""))
-    puzzle.difficulty = clampi(int(data.get("difficulty", 1)), 1, 5)
+    puzzle.id = str(data.get("id", "")).strip_edges()
+    puzzle.category = str(data.get("category", "")).strip_edges().to_lower()
+    # Do not clamp source data here: invalid difficulty must reach the validator
+    # instead of being silently converted into a valid catalog entry.
+    puzzle.difficulty = int(data.get("difficulty", 0))
     puzzle.prompt = str(data.get("prompt", ""))
     puzzle.hint = str(data.get("hint", ""))
     puzzle.explanation = str(data.get("explanation", ""))
     puzzle.answer = data.get("answer", "")
     if typeof(data.get("answers", [])) == TYPE_ARRAY:
         puzzle.answers = data.get("answers", []).duplicate()
-    puzzle.answer_type = str(data.get("answer_type", _infer_answer_type(puzzle.answer)))
+    puzzle.answer_type = str(data.get("answer_type", _infer_answer_type(puzzle.answer))).strip_edges().to_lower()
     puzzle.time_limit_seconds = max(0.0, float(data.get("time_limit_seconds", 0.0)))
     if typeof(data.get("tags", [])) == TYPE_ARRAY:
         puzzle.tags = data.get("tags", []).duplicate()
