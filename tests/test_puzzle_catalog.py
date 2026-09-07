@@ -1,6 +1,7 @@
 import json
 import pathlib
 import unittest
+from collections import Counter
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -37,7 +38,19 @@ class PuzzleCatalogTests(unittest.TestCase):
                 self.assertIn(puzzle["answer"], puzzle["answers"], puzzle["id"])
 
     def test_catalog_is_not_accidentally_empty_or_tiny(self):
-        self.assertGreaterEqual(len(self.puzzles), 30)
+        self.assertGreaterEqual(len(self.puzzles), 50)
+
+    def test_difficulty_distribution_is_balanced(self):
+        counts = Counter(p["difficulty"] for p in self.puzzles)
+        self.assertEqual(sum(counts.values()), 50)
+        for difficulty in range(1, 6):
+            self.assertGreaterEqual(counts[difficulty], 6, difficulty)
+
+    def test_choice_puzzles_have_real_choice_metadata(self):
+        for puzzle in self.puzzles:
+            if puzzle.get("answer_type") == "choice":
+                self.assertGreaterEqual(len(puzzle.get("answers", [])), 2, puzzle["id"])
+                self.assertLessEqual(len(puzzle["answers"]), 5, puzzle["id"])
 
 
 if __name__ == "__main__":
