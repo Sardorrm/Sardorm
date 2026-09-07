@@ -8,8 +8,21 @@ class LevelProgressionContractTests(unittest.TestCase):
     def test_level_manager_sanitizes_saved_progress(self):
         code = (ROOT / "src" / "level_manager.gd").read_text(encoding="utf-8")
         self.assertIn("func _sanitize_completed(value) -> Array:", code)
-        self.assertIn("if index >= 0 and index < puzzle_engine.puzzles.size() and not result.has(index):", code)
-        self.assertIn("result.sort()", code)
+        self.assertIn("var valid: Dictionary = {}", code)
+        self.assertIn("if index >= 0 and index < puzzle_engine.puzzles.size():", code)
+        self.assertIn("for index in range(puzzle_engine.puzzles.size()):", code)
+        self.assertIn("if not valid.has(index):", code)
+
+    def test_malformed_saved_completion_gap_cannot_skip_campaign_levels(self):
+        code = (ROOT / "src" / "level_manager.gd").read_text(encoding="utf-8")
+        self.assertIn("# Campaign unlocks are sequential.", code)
+        self.assertIn("if not valid.has(index):\n            break", code)
+        self.assertNotIn("result.sort()\n    return result", code)
+
+    def test_current_level_is_capped_to_unlocked_frontier(self):
+        code = (ROOT / "src" / "level_manager.gd").read_text(encoding="utf-8")
+        self.assertIn("var requested_level := clamp(int(save_data.get(\"current_level\", 0))", code)
+        self.assertIn("current_level = mini(requested_level, completed_levels.size())", code)
 
     def test_unlock_requires_previous_level(self):
         code = (ROOT / "src" / "level_manager.gd").read_text(encoding="utf-8")
