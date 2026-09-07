@@ -18,7 +18,7 @@ class AchievementPresentationContractTests(unittest.TestCase):
 
     def test_new_unlock_is_surfaced(self):
         main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
-        self.assertIn('"🏆 Yangi yutuq ochildi!"', main)
+        self.assertIn('feedback.text += "\\n🏆 Yangi yutuq ochildi!"', main)
         self.assertIn('"🏆 Yangi yutuq: %s" % _achievement_names(newly_daily)', main)
 
     def test_achievement_manager_is_source_of_truth(self):
