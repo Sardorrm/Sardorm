@@ -54,7 +54,9 @@ func record_solved() -> void:
     current_position = mini(current_indices.size(), current_position + 1)
 
 func record_failed() -> void:
-    current_position = mini(current_indices.size(), current_position + 1)
+    # A failed/timeout daily puzzle remains retryable. Advancing here would
+    # skip the puzzle and could make the session impossible to complete.
+    current_position = clampi(current_position, 0, current_indices.size())
 
 func is_completed() -> bool:
     return current_date in completed_dates
