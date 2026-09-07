@@ -14,7 +14,7 @@ func setup(puzzle_repository: PuzzleRepository, save_data: Dictionary = {}) -> v
     repository = puzzle_repository
     var stored = save_data.get("daily_challenges", {})
     if typeof(stored) == TYPE_DICTIONARY:
-        completed_dates = stored.get("completed_dates", []).duplicate()
+        completed_dates = _sanitize_completed_dates(stored.get("completed_dates", []))
         var stored_date := str(stored.get("date", ""))
         if stored_date == DailyChallenge.date_key():
             completed_count = clampi(int(stored.get("completed_count", 0)), 0, CHALLENGE_SIZE)
@@ -35,6 +35,9 @@ func refresh(unix_time: int = -1) -> void:
         current_position = clampi(current_position, 0, current_indices.size())
 
 func get_puzzles() -> Array:
+    # Re-evaluate the date whenever the UI asks for the challenge. This handles
+    # an app that stays open across local midnight without requiring a restart.
+    refresh()
     var result: Array = []
     if repository == null:
         return result
@@ -59,6 +62,7 @@ func record_failed() -> void:
     current_position = clampi(current_position, 0, current_indices.size())
 
 func is_completed() -> bool:
+    refresh()
     return current_date in completed_dates
 
 func is_session_completed() -> bool:
@@ -79,3 +83,26 @@ func to_dict() -> Dictionary:
         "current_position": current_position,
         "completed_dates": completed_dates.duplicate()
     }
+
+func _sanitize_completed_dates(value) -> Array:
+    var result: Array = []
+    if typeof(value) != TYPE_ARRAY:
+        return result
+    for item in value:
+        var key := str(item).strip_edges()
+        if _is_valid_date_key(key) and not result.has(key):
+            result.append(key)
+    return result
+
+func _is_valid_date_key(value: String) -> bool:
+    if value.length() != 10 or value[4] != "-" or value[7] != "-":
+        return false
+    var parts := value.split("-")
+    if parts.size() != 3:
+        return false
+    var year := int(parts[0])
+    var month := int(parts[1])
+    var day := int(parts[2])
+    if str(year).length() != 4 or month < 1 or month > 12 or day < 1 or day > 31:
+        return false
+    return true
