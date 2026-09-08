@@ -30,6 +30,13 @@ class GameplayRegressionContractTests(unittest.TestCase):
         self.assertIn("func timeout()", session)
         self.assertIn("timed_out.emit", session)
 
+    def test_timeout_campaign_keeps_current_level_retryable(self):
+        main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        self.assertIn('content.add_child(_button("QAYTA URINISH", _retry_current_puzzle, 68))', main)
+        self.assertIn("func _retry_current_puzzle() -> void:", main)
+        self.assertIn("_show_puzzle()", main)
+        self.assertNotIn('content.add_child(_button("KEYINGI DARAJA", _next_level, 68))\n\nfunc _show_timeout', main)
+
     def test_daily_and_campaign_paths_do_not_share_level_progression(self):
         main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
         progression = (ROOT / "src" / "progression_service.gd").read_text(encoding="utf-8")
