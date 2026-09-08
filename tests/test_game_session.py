@@ -26,6 +26,15 @@ class GameSessionContractTests(unittest.TestCase):
         self.assertIn("timer_tick.stop()", code)
         self.assertIn("timer_tick.start()", code)
 
+    def test_timeout_ui_uses_existing_session_contract(self):
+        session = (ROOT / "src" / "game_session.gd").read_text(encoding="utf-8")
+        main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        self.assertIn("func check_timeout() -> bool:", session)
+        self.assertIn("if session.check_timeout():", main)
+        self.assertNotIn("session.is_timed_out()", main)
+        self.assertIn('"QAYTA URINISH"', main)
+        self.assertIn("func _retry_current_puzzle()", main)
+
 
 if __name__ == "__main__":
     unittest.main()
