@@ -101,10 +101,10 @@ func _label(text: String, size: int = 18) -> Label:
     label.add_theme_font_size_override("font_size", size)
     return label
 
-func _button(text: String, callback: Callable, height: int = 62) -> Button:
+func _button(text: String, callback: Callable, height: int = 64) -> Button:
     var button := Button.new()
     button.text = text
-    button.custom_minimum_size = Vector2(0, height)
+    button.custom_minimum_size = Vector2(0, maxi(64, height))
     button.add_theme_font_size_override("font_size", 20)
     button.focus_mode = Control.FOCUS_ALL
     button.pressed.connect(callback)
@@ -157,7 +157,8 @@ func _show_levels() -> void:
     for i in range(engine.puzzles.size()):
         var level_button := Button.new()
         level_button.text = str(i + 1) + (" ✓" if level_manager.is_completed(i) else "")
-        level_button.custom_minimum_size = Vector2(72, 58)
+        level_button.custom_minimum_size = Vector2(72, 64)
+        level_button.focus_mode = Control.FOCUS_ALL
         level_button.disabled = not level_manager.is_unlocked(i)
         level_button.tooltip_text = "Daraja %d" % (i + 1)
         level_button.pressed.connect(func(idx := i): _select_level(idx))
@@ -204,10 +205,10 @@ func _render_puzzle(puzzle: PuzzleDefinition, progress_text: String) -> void:
         _build_button_answers(feedback, hint)
     else:
         _build_text_answer(feedback, hint)
-    content.add_child(_button("HINT", func(): _use_hint(hint), 54))
-    pause_button = _button("⏸ PAUZA", _toggle_pause, 54)
+    content.add_child(_button("HINT", func(): _use_hint(hint), 64))
+    pause_button = _button("⏸ PAUZA", _toggle_pause, 64)
     content.add_child(pause_button)
-    content.add_child(_button("DARAJALAR" if not daily_mode else "CHALLENGE", _show_levels if not daily_mode else _show_daily, 54))
+    content.add_child(_button("DARAJALAR" if not daily_mode else "CHALLENGE", _show_levels if not daily_mode else _show_daily, 64))
     timer_tick.start()
 
 func _build_text_answer(feedback: Label, hint: Label) -> void:
