@@ -24,9 +24,10 @@ func _process(delta: float) -> void:
     _polish_tree(root)
 
 func _apply_safe_area(root: Node) -> void:
-    if not (root is Control):
+    var ui := root.get_node_or_null("Control")
+    if ui == null or not (ui is Control):
         return
-    var margin := root.get_node_or_null("Control/MarginContainer")
+    var margin := ui.get_node_or_null("MarginContainer")
     if margin == null or not (margin is MarginContainer):
         return
     var left := BASE_MARGIN_LEFT
@@ -37,7 +38,7 @@ func _apply_safe_area(root: Node) -> void:
         var safe := DisplayServer.get_display_safe_area()
         var screen := DisplayServer.screen_get_size(DisplayServer.SCREEN_OF_MAIN_WINDOW)
         if safe.size.x > 0 and safe.size.y > 0 and screen.x > 0 and screen.y > 0:
-            var scale := Vector2(root.size.x / float(screen.x), root.size.y / float(screen.y))
+            var scale := Vector2(ui.size.x / float(screen.x), ui.size.y / float(screen.y))
             left += maxf(0.0, float(safe.position.x) * scale.x)
             top += maxf(0.0, float(safe.position.y) * scale.y)
             var safe_right := float(screen.x - safe.end.x) * scale.x
