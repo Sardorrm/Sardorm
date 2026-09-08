@@ -30,6 +30,18 @@ class DailyChallengeServiceContractTests(unittest.TestCase):
         self.assertIn("completed_count >= mini(CHALLENGE_SIZE, current_indices.size())", code)
         self.assertIn("not current_indices.is_empty()", code)
 
+    def test_completed_date_sanitization_rejects_impossible_calendar_dates(self):
+        code = (ROOT / "src" / "daily_challenge_service.gd").read_text(encoding="utf-8")
+        self.assertIn("func _is_valid_date_key(value: String) -> bool:", code)
+        self.assertIn("var days_in_month := [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]", code)
+        self.assertIn("if _is_leap_year(year):", code)
+        self.assertIn("return day <= days_in_month[month - 1]", code)
+
+    def test_completed_date_sanitization_deduplicates_and_strips_values(self):
+        code = (ROOT / "src" / "daily_challenge_service.gd").read_text(encoding="utf-8")
+        self.assertIn('var key := str(item).strip_edges()', code)
+        self.assertIn("and not result.has(key)", code)
+
 
 if __name__ == "__main__":
     unittest.main()
