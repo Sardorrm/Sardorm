@@ -3,6 +3,10 @@ extends Node
 const TIMER_WARNING_SECONDS := 10
 const TIMER_CRITICAL_SECONDS := 5
 const LEVEL_BUTTON_SIZE := Vector2(76, 64)
+const BASE_MARGIN_LEFT := 24.0
+const BASE_MARGIN_RIGHT := 24.0
+const BASE_MARGIN_TOP := 28.0
+const BASE_MARGIN_BOTTOM := 28.0
 const HAPTIC_MS := 18
 var pulse_time := 0.0
 var styled_nodes: Dictionary = {}
@@ -16,7 +20,34 @@ func _process(delta: float) -> void:
     var root := get_tree().current_scene
     if root == null:
         return
+    _apply_safe_area(root)
     _polish_tree(root)
+
+func _apply_safe_area(root: Node) -> void:
+    if not (root is Control):
+        return
+    var margin := root.get_node_or_null("Control/MarginContainer")
+    if margin == null or not (margin is MarginContainer):
+        return
+    var left := BASE_MARGIN_LEFT
+    var right := BASE_MARGIN_RIGHT
+    var top := BASE_MARGIN_TOP
+    var bottom := BASE_MARGIN_BOTTOM
+    if OS.has_feature("android") or OS.has_feature("ios"):
+        var safe := DisplayServer.get_display_safe_area()
+        var screen := DisplayServer.screen_get_size(DisplayServer.SCREEN_OF_MAIN_WINDOW)
+        if safe.size.x > 0 and safe.size.y > 0 and screen.x > 0 and screen.y > 0:
+            var scale := Vector2(root.size.x / float(screen.x), root.size.y / float(screen.y))
+            left += maxf(0.0, float(safe.position.x) * scale.x)
+            top += maxf(0.0, float(safe.position.y) * scale.y)
+            var safe_right := float(screen.x - safe.end.x) * scale.x
+            var safe_bottom := float(screen.y - safe.end.y) * scale.y
+            right += maxf(0.0, safe_right)
+            bottom += maxf(0.0, safe_bottom)
+    margin.add_theme_constant_override("margin_left", roundi(left))
+    margin.add_theme_constant_override("margin_right", roundi(right))
+    margin.add_theme_constant_override("margin_top", roundi(top))
+    margin.add_theme_constant_override("margin_bottom", roundi(bottom))
 
 func _polish_tree(node: Node) -> void:
     var node_id := node.get_instance_id()
