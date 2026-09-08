@@ -98,11 +98,19 @@ func _is_valid_date_key(value: String) -> bool:
     if value.length() != 10 or value[4] != "-" or value[7] != "-":
         return false
     var parts := value.split("-")
-    if parts.size() != 3:
+    if parts.size() != 3 or parts.any(func(part): return not part.is_valid_int()):
         return false
     var year := int(parts[0])
     var month := int(parts[1])
     var day := int(parts[2])
-    if str(year).length() != 4 or month < 1 or month > 12 or day < 1 or day > 31:
+    if parts[0].length() != 4 or parts[1].length() != 2 or parts[2].length() != 2:
         return false
-    return true
+    if month < 1 or month > 12 or day < 1:
+        return false
+    var days_in_month := [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    if _is_leap_year(year):
+        days_in_month[1] = 29
+    return day <= days_in_month[month - 1]
+
+func _is_leap_year(year: int) -> bool:
+    return year % 400 == 0 or (year % 4 == 0 and year % 100 != 0)
