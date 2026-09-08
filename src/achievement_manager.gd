@@ -16,9 +16,9 @@ var streak := 0
 var hints_free_solved := 0
 
 func load_from_dict(data: Dictionary) -> void:
-    unlocked = data.get("unlocked", []).duplicate()
-    streak = int(data.get("streak", 0))
-    hints_free_solved = int(data.get("hints_free_solved", 0))
+    unlocked = _sanitize_unlocked(data.get("unlocked", []))
+    streak = maxi(0, int(data.get("streak", 0)))
+    hints_free_solved = maxi(0, int(data.get("hints_free_solved", 0)))
 
 func on_solved(total_solved: int, hint_used: bool) -> Array:
     streak += 1
@@ -61,3 +61,19 @@ func is_unlocked(id: String) -> bool:
 
 func to_dict() -> Dictionary:
     return {"unlocked": unlocked.duplicate(), "streak": streak, "hints_free_solved": hints_free_solved}
+
+func _sanitize_unlocked(value) -> Array:
+    var result: Array = []
+    if typeof(value) != TYPE_ARRAY:
+        return result
+    for item in value:
+        var id := str(item).strip_edges()
+        if _is_known_id(id) and not result.has(id):
+            result.append(id)
+    return result
+
+func _is_known_id(id: String) -> bool:
+    for definition in DEFINITIONS:
+        if definition.id == id:
+            return true
+    return false
