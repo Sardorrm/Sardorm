@@ -40,6 +40,8 @@ jobs:
           PY
       - name: Run Python integrity tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Audit Android export configuration
+        run: python3 scripts/validate_android_export.py
       - name: Parse project with Godot
         run: |
           set -e
