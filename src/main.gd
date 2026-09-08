@@ -234,7 +234,7 @@ func _toggle_pause() -> void:
     if session.paused:
         session.resume()
         timer_tick.start()
-        pause_button.text = "⏸ PAUZA"
+        pause_button.text = "▶ DAVOM ETISH"
     else:
         session.pause()
         timer_tick.stop()
@@ -440,4 +440,8 @@ func _show_timeout() -> void:
         daily_position = daily.current_position
         content.add_child(_button("DAILY DAVOM ETISH", _show_daily_puzzle, 68))
     else:
-        content.add_child(_button("KEYINGI DARAJA", _next_level, 68))
+        content.add_child(_button("QAYTA URINISH", _retry_current_puzzle, 68))
+    content.add_child(_button("BOSH MENYU", _show_home, 60))
+
+func _retry_current_puzzle() -> void:
+    _show_puzzle()
