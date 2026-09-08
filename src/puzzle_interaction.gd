@@ -30,6 +30,10 @@ static func validate_selection(puzzle: PuzzleDefinition, value: String) -> bool:
 
 static func _normalize_selection(puzzle: PuzzleDefinition, value: String) -> String:
     var selected := value.strip_edges().to_lower()
+    if input_type(puzzle) == TYPE_NUMBER:
+        var numeric := selected.to_float()
+        if selected.is_valid_float():
+            return "%0.12f" % numeric
     if input_type(puzzle) == TYPE_TRUE_FALSE:
         if selected in ["to‘g‘ri", "to'g'ri", "togri", "true", "1"]:
             return "true"
