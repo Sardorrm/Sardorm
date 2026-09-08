@@ -24,7 +24,7 @@ class GameplayRegressionContractTests(unittest.TestCase):
     def test_timeout_and_pause_are_part_of_the_runtime_contract(self):
         main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
         session = (ROOT / "src" / "game_session.gd").read_text(encoding="utf-8")
-        self.assertIn("session.is_timed_out()", main)
+        self.assertIn("session.check_timeout()", main)
         self.assertIn("session.pause()", main)
         self.assertIn("session.resume()", main)
         self.assertIn("func timeout()", session)
