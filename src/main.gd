@@ -409,7 +409,7 @@ func _save() -> void:
 func _on_timer_tick() -> void:
     if active_puzzle == null or puzzle_finished or session.paused or timer_label == null:
         return
-    if session.is_timed_out():
+    if session.check_timeout():
         _handle_timeout()
         return
     var remaining := maxi(0, int(ceil(session.get_remaining_seconds())))
