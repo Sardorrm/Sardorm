@@ -23,6 +23,12 @@ class SaveManagerContractTests(unittest.TestCase):
         ]:
             self.assertIn(token, code)
 
+    def test_migration_guards_older_schema_versions(self):
+        code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
+        self.assertIn('var source_version := int(data.get("version", 1))', code)
+        self.assertIn('if source_version < 5 and result["streak"].is_empty():', code)
+        self.assertIn('if source_version < 4 and result["lives"].is_empty():', code)
+
     def test_corrupt_or_unreadable_save_falls_back_to_defaults(self):
         code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
         self.assertIn("if file == null:", code)
