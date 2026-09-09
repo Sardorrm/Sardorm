@@ -33,6 +33,16 @@ class PuzzleRepositoryHardeningTests(unittest.TestCase):
         self.assertIn("puzzles.clear()", self.code)
         self.assertIn("by_id.clear()", self.code)
 
+    def test_repository_can_reuse_engine_catalog_without_second_file_parse(self):
+        self.assertIn("func load_from_engine(engine: PuzzleEngine) -> bool:", self.code)
+        self.assertIn("for raw in engine.puzzles:", self.code)
+        self.assertIn("PuzzleDefinition.from_dict(raw)", self.code)
+
+    def test_main_uses_repository_engine_reuse_path(self):
+        main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
+        self.assertIn("if not repository.load_from_engine(engine):", main)
+        self.assertNotIn("if not repository.load_from_file(\"res://data/puzzles.json\"):", main)
+
 
 if __name__ == "__main__":
     unittest.main()
