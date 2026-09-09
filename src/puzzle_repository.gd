@@ -20,11 +20,34 @@ func load_from_file(path: String) -> bool:
         paths.append(extra_path)
     for source_path in paths:
         if not _load_document(source_path):
-            puzzles.clear()
-            by_id.clear()
-            by_prompt.clear()
+            _clear_loaded_state()
             return false
     return true
+
+func load_from_engine(engine: PuzzleEngine) -> bool:
+    last_error = ""
+    _clear_loaded_state()
+    if engine == null:
+        last_error = "Puzzle engine is null"
+        return false
+    for raw in engine.puzzles:
+        if typeof(raw) != TYPE_DICTIONARY:
+            last_error = "Puzzle is not an object"
+            _clear_loaded_state()
+            return false
+        var puzzle := PuzzleDefinition.from_dict(raw)
+        if not _validate(puzzle):
+            _clear_loaded_state()
+            return false
+        puzzles.append(puzzle)
+        by_id[puzzle.id] = puzzle
+        by_prompt[_prompt_key(puzzle.prompt)] = puzzle
+    return true
+
+func _clear_loaded_state() -> void:
+    puzzles.clear()
+    by_id.clear()
+    by_prompt.clear()
 
 func _load_document(path: String) -> bool:
     var file := FileAccess.open(path, FileAccess.READ)
