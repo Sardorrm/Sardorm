@@ -11,6 +11,12 @@ const HAPTIC_MS := 18
 var pulse_time := 0.0
 var styled_nodes: Dictionary = {}
 var haptics_enabled := true
+var _last_ui_size := Vector2.ZERO
+var _last_screen_size := Vector2i.ZERO
+
+func _ready() -> void:
+    get_tree().node_added.connect(_on_node_added)
+    call_deferred("_refresh_current_scene")
 
 func set_haptics_enabled(enabled: bool) -> void:
     haptics_enabled = enabled
@@ -20,8 +26,50 @@ func _process(delta: float) -> void:
     var root := get_tree().current_scene
     if root == null:
         return
+    _refresh_safe_area_if_needed(root)
+    var timer := root.get_node_or_null("Control/MarginContainer/VBoxContainer/Label")
+    if timer is Label and timer.text.begins_with("⏱"):
+        _polish_timer(timer)
+
+func _on_node_added(node: Node) -> void:
+    _apply_static_polish(node)
+    if node is Label:
+        var label := node as Label
+        if label.text.begins_with("⏱"):
+            _polish_timer(label)
+        elif label.text.begins_with("✓ TO‘G‘RI") or label.text.begins_with("Hali emas") or label.text.begins_with("⏱ VAQT TUGADI"):
+            _polish_feedback(label)
+    if node is Control:
+        call_deferred("_refresh_current_scene")
+
+func _refresh_current_scene() -> void:
+    var root := get_tree().current_scene
+    if root == null:
+        return
+    _polish_tree_once(root)
+    _refresh_safe_area_if_needed(root, true)
+
+func _polish_tree_once(node: Node) -> void:
+    _apply_static_polish(node)
+    if node is Label:
+        var label := node as Label
+        if label.text.begins_with("⏱"):
+            _polish_timer(label)
+        elif label.text.begins_with("✓ TO‘G‘RI") or label.text.begins_with("Hali emas") or label.text.begins_with("⏱ VAQT TUGADI"):
+            _polish_feedback(label)
+    for child in node.get_children():
+        _polish_tree_once(child)
+
+func _refresh_safe_area_if_needed(root: Node, force := false) -> void:
+    var ui := root.get_node_or_null("Control")
+    if ui == null or not (ui is Control):
+        return
+    var screen := DisplayServer.screen_get_size(DisplayServer.SCREEN_OF_MAIN_WINDOW)
+    if not force and ui.size == _last_ui_size and screen == _last_screen_size:
+        return
+    _last_ui_size = ui.size
+    _last_screen_size = screen
     _apply_safe_area(root)
-    _polish_tree(root)
 
 func _apply_safe_area(root: Node) -> void:
     var ui := root.get_node_or_null("Control")
@@ -50,19 +98,11 @@ func _apply_safe_area(root: Node) -> void:
     margin.add_theme_constant_override("margin_top", roundi(top))
     margin.add_theme_constant_override("margin_bottom", roundi(bottom))
 
-func _polish_tree(node: Node) -> void:
-    var node_id := node.get_instance_id()
-    if not styled_nodes.has(node_id):
-        _apply_static_polish(node)
-        styled_nodes[node_id] = true
-    if node is Label and node.text.begins_with("⏱"):
-        _polish_timer(node)
-    elif node is Label and (node.text.begins_with("✓ TO‘G‘RI") or node.text.begins_with("Hali emas") or node.text.begins_with("⏱ VAQT TUGADI")):
-        _polish_feedback(node)
-    for child in node.get_children():
-        _polish_tree(child)
-
 func _apply_static_polish(node: Node) -> void:
+    var node_id := node.get_instance_id()
+    if styled_nodes.has(node_id):
+        return
+    styled_nodes[node_id] = true
     if node is Button:
         _polish_button(node)
     elif node is LineEdit:
