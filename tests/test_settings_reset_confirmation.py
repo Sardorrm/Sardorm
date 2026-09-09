@@ -24,3 +24,11 @@ def test_reset_guard_requires_explicit_confirmation_before_clearing():
     assert 'dialog.confirmed.connect' in guard
     assert "SaveManager.clear_progress()" in guard
     assert "dialog.canceled.connect(dialog.queue_free)" in guard
+
+
+def test_reset_guard_is_event_driven_instead_of_polling_every_frame():
+    guard = GUARD.read_text(encoding="utf-8")
+
+    assert 'get_tree().node_added.connect(_on_node_added)' in guard
+    assert 'func _on_node_added(node: Node) -> void:' in guard
+    assert 'func _process(_delta: float) -> void:' not in guard
