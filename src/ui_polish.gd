@@ -12,6 +12,8 @@ var pulse_time := 0.0
 var styled_nodes: Dictionary = {}
 var haptics_enabled := true
 var active_timer_label: Label
+var _ui: Control
+var _margin: MarginContainer
 var _last_ui_size := Vector2.ZERO
 var _last_screen_size := Vector2i.ZERO
 
@@ -25,10 +27,11 @@ func set_haptics_enabled(enabled: bool) -> void:
 
 func _process(delta: float) -> void:
     pulse_time += delta
-    var root := get_tree().current_scene
-    if root == null:
+    if not is_instance_valid(_ui) or not _ui.is_inside_tree():
+        _ui = null
+        _margin = null
         return
-    _refresh_safe_area_if_needed(root)
+    _refresh_safe_area_if_needed()
     if is_instance_valid(active_timer_label) and active_timer_label.is_inside_tree():
         _polish_timer(active_timer_label)
     else:
@@ -36,6 +39,8 @@ func _process(delta: float) -> void:
 
 func _on_node_added(node: Node) -> void:
     _apply_static_polish(node)
+    if node is Control:
+        _bind_ui_nodes(node)
     if node is Label:
         var label := node as Label
         if label.text.begins_with("⏱"):
@@ -49,14 +54,25 @@ func _on_node_added(node: Node) -> void:
 func _on_node_removed(node: Node) -> void:
     if node == active_timer_label:
         active_timer_label = null
+    if node == _margin:
+        _margin = null
+    if node == _ui:
+        _ui = null
+        _margin = null
     styled_nodes.erase(node.get_instance_id())
 
 func _refresh_current_scene() -> void:
     var root := get_tree().current_scene
     if root == null:
         return
+    _bind_ui_nodes(root)
     _polish_tree_once(root)
-    _refresh_safe_area_if_needed(root, true)
+    _refresh_safe_area_if_needed(true)
+
+func _bind_ui_nodes(node: Node) -> void:
+    if node.name == "Control" and node is Control:
+        _ui = node as Control
+        _margin = _ui.get_node_or_null("MarginContainer") as MarginContainer
 
 func _polish_tree_once(node: Node) -> void:
     _apply_static_polish(node)
@@ -70,23 +86,18 @@ func _polish_tree_once(node: Node) -> void:
     for child in node.get_children():
         _polish_tree_once(child)
 
-func _refresh_safe_area_if_needed(root: Node, force := false) -> void:
-    var ui := root.get_node_or_null("Control")
-    if ui == null or not (ui is Control):
+func _refresh_safe_area_if_needed(force := false) -> void:
+    if not is_instance_valid(_ui) or not is_instance_valid(_margin):
         return
     var screen := DisplayServer.screen_get_size(DisplayServer.SCREEN_OF_MAIN_WINDOW)
-    if not force and ui.size == _last_ui_size and screen == _last_screen_size:
+    if not force and _ui.size == _last_ui_size and screen == _last_screen_size:
         return
-    _last_ui_size = ui.size
+    _last_ui_size = _ui.size
     _last_screen_size = screen
-    _apply_safe_area(root)
+    _apply_safe_area()
 
-func _apply_safe_area(root: Node) -> void:
-    var ui := root.get_node_or_null("Control")
-    if ui == null or not (ui is Control):
-        return
-    var margin := ui.get_node_or_null("MarginContainer")
-    if margin == null or not (margin is MarginContainer):
+func _apply_safe_area() -> void:
+    if not is_instance_valid(_ui) or not is_instance_valid(_margin):
         return
     var left := BASE_MARGIN_LEFT
     var right := BASE_MARGIN_RIGHT
@@ -96,17 +107,17 @@ func _apply_safe_area(root: Node) -> void:
         var safe := DisplayServer.get_display_safe_area()
         var screen := DisplayServer.screen_get_size(DisplayServer.SCREEN_OF_MAIN_WINDOW)
         if safe.size.x > 0 and safe.size.y > 0 and screen.x > 0 and screen.y > 0:
-            var scale := Vector2(ui.size.x / float(screen.x), ui.size.y / float(screen.y))
+            var scale := Vector2(_ui.size.x / float(screen.x), _ui.size.y / float(screen.y))
             left += maxf(0.0, float(safe.position.x) * scale.x)
             top += maxf(0.0, float(safe.position.y) * scale.y)
             var safe_right := float(screen.x - safe.end.x) * scale.x
             var safe_bottom := float(screen.y - safe.end.y) * scale.y
             right += maxf(0.0, safe_right)
             bottom += maxf(0.0, safe_bottom)
-    margin.add_theme_constant_override("margin_left", roundi(left))
-    margin.add_theme_constant_override("margin_right", roundi(right))
-    margin.add_theme_constant_override("margin_top", roundi(top))
-    margin.add_theme_constant_override("margin_bottom", roundi(bottom))
+    _margin.add_theme_constant_override("margin_left", roundi(left))
+    _margin.add_theme_constant_override("margin_right", roundi(right))
+    _margin.add_theme_constant_override("margin_top", roundi(top))
+    _margin.add_theme_constant_override("margin_bottom", roundi(bottom))
 
 func _apply_static_polish(node: Node) -> void:
     var node_id := node.get_instance_id()
