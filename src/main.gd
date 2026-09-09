@@ -185,6 +185,15 @@ func _show_puzzle() -> void:
         return
     _render_puzzle(PuzzleDefinition.from_dict(raw_puzzle), "Daraja %d / %d" % [current_index + 1, engine.puzzles.size()])
 
+func _retry_current_puzzle() -> void:
+    if lives.is_empty():
+        _show_lives_empty()
+        return
+    if daily_mode:
+        _show_daily_puzzle()
+    else:
+        _show_puzzle()
+
 func _render_puzzle(puzzle: PuzzleDefinition, progress_text: String) -> void:
     active_puzzle = puzzle
     session.start(active_puzzle, DifficultyManager.recommended_time(active_puzzle))
@@ -431,4 +440,4 @@ func _handle_timeout() -> void:
     if lives.is_empty():
         content.add_child(_button("JONLAR TUGADI", _show_lives_empty, 68))
     else:
-        content.add_child(_button("QAYTA URINISH", _show_puzzle, 68))
+        content.add_child(_button("QAYTA URINISH", _retry_current_puzzle, 68))
