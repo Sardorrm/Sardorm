@@ -7,6 +7,10 @@ var current_level: int = 0
 
 func setup(engine: PuzzleEngine, save_data: Dictionary = {}) -> void:
     puzzle_engine = engine
+    completed_levels = []
+    current_level = 0
+    if puzzle_engine == null:
+        return
     completed_levels = _sanitize_completed(save_data.get("completed_levels", []))
     var max_index := max(0, puzzle_engine.puzzles.size() - 1)
     var requested_level := clamp(int(save_data.get("current_level", 0)), 0, max_index)
@@ -15,7 +19,7 @@ func setup(engine: PuzzleEngine, save_data: Dictionary = {}) -> void:
 
 func _sanitize_completed(value) -> Array:
     var valid: Dictionary = {}
-    if typeof(value) != TYPE_ARRAY:
+    if puzzle_engine == null or typeof(value) != TYPE_ARRAY:
         return []
     for item in value:
         var index := int(item)
