@@ -11,11 +11,13 @@ const HAPTIC_MS := 18
 var pulse_time := 0.0
 var styled_nodes: Dictionary = {}
 var haptics_enabled := true
+var active_timer_label: Label
 var _last_ui_size := Vector2.ZERO
 var _last_screen_size := Vector2i.ZERO
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
+    get_tree().node_removed.connect(_on_node_removed)
     call_deferred("_refresh_current_scene")
 
 func set_haptics_enabled(enabled: bool) -> void:
@@ -27,20 +29,27 @@ func _process(delta: float) -> void:
     if root == null:
         return
     _refresh_safe_area_if_needed(root)
-    var timer := root.get_node_or_null("Control/MarginContainer/VBoxContainer/Label")
-    if timer is Label and timer.text.begins_with("⏱"):
-        _polish_timer(timer)
+    if is_instance_valid(active_timer_label) and active_timer_label.is_inside_tree():
+        _polish_timer(active_timer_label)
+    else:
+        active_timer_label = null
 
 func _on_node_added(node: Node) -> void:
     _apply_static_polish(node)
     if node is Label:
         var label := node as Label
         if label.text.begins_with("⏱"):
+            active_timer_label = label
             _polish_timer(label)
         elif label.text.begins_with("✓ TO‘G‘RI") or label.text.begins_with("Hali emas") or label.text.begins_with("⏱ VAQT TUGADI"):
             _polish_feedback(label)
     if node is Control:
         call_deferred("_refresh_current_scene")
+
+func _on_node_removed(node: Node) -> void:
+    if node == active_timer_label:
+        active_timer_label = null
+    styled_nodes.erase(node.get_instance_id())
 
 func _refresh_current_scene() -> void:
     var root := get_tree().current_scene
@@ -54,6 +63,7 @@ func _polish_tree_once(node: Node) -> void:
     if node is Label:
         var label := node as Label
         if label.text.begins_with("⏱"):
+            active_timer_label = label
             _polish_timer(label)
         elif label.text.begins_with("✓ TO‘G‘RI") or label.text.begins_with("Hali emas") or label.text.begins_with("⏱ VAQT TUGADI"):
             _polish_feedback(label)
