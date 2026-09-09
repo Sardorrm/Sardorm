@@ -11,6 +11,7 @@ config/features=PackedStringArray("4.3", "GL Compatibility")
 MindShiftUIPolish="*res://src/ui_polish.gd"
 MindShiftStartupState="*res://src/startup_state.gd"
 MindShiftAppLifecycle="*res://src/app_lifecycle.gd"
+MindShiftSettingsResetGuard="*res://src/settings_reset_guard.gd"
 
 [display/window]
 size/viewport_width=720
