@@ -11,11 +11,13 @@ func load_from_file(path: String) -> bool:
     last_error = ""
     var incoming: Array = []
     if not _read_puzzles(path, incoming):
+        puzzles.clear()
         return false
     var extra_path := path.get_basename() + EXTRA_PATH_SUFFIX
     if FileAccess.file_exists(extra_path):
         var extra: Array = []
         if not _read_puzzles(extra_path, extra):
+            puzzles.clear()
             return false
         incoming.append_array(extra)
     var ids: Dictionary = {}
@@ -23,6 +25,7 @@ func load_from_file(path: String) -> bool:
         var id := str(puzzle["id"])
         if ids.has(id):
             last_error = "Invalid or duplicate puzzle id: " + id
+            puzzles.clear()
             return false
         ids[id] = true
     puzzles = incoming
