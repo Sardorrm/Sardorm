@@ -48,8 +48,6 @@ func _on_node_added(node: Node) -> void:
             _polish_timer(label)
         elif label.text.begins_with("✓ TO‘G‘RI") or label.text.begins_with("Hali emas") or label.text.begins_with("⏱ VAQT TUGADI"):
             _polish_feedback(label)
-    if node is Control:
-        call_deferred("_refresh_current_scene")
 
 func _on_node_removed(node: Node) -> void:
     if node == active_timer_label:
