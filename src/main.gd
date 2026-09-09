@@ -28,7 +28,7 @@ func _ready() -> void:
     if not engine.load_from_file("res://data/puzzles.json"):
         push_error("Could not load puzzle data: " + engine.last_error)
         return
-    if not repository.load_from_file("res://data/puzzles.json"):
+    if not repository.load_from_engine(engine):
         push_error("Could not load puzzle repository: " + repository.last_error)
         return
     var save_data := SaveManager.load_progress()
@@ -428,21 +428,7 @@ func _handle_timeout() -> void:
         daily.record_failed()
     events.record(EventTracker.ANSWER_SUBMITTED, {"puzzle_id": active_puzzle.id, "correct": false, "timeout": true, "daily": daily_mode})
     _save()
-    _show_timeout()
-
-func _show_timeout() -> void:
-    _clear_content()
-    content.add_child(_label("⏱ VAQT TUGADI", 34))
-    content.add_child(_label("Bu safar ulgurmadingiz. ❤️ -1", 20))
-    content.add_child(_label("Javobni tushunib olish ham g‘alabaning bir qismi.", 17))
     if lives.is_empty():
         content.add_child(_button("JONLAR TUGADI", _show_lives_empty, 68))
-    elif daily_mode:
-        daily_position = daily.current_position
-        content.add_child(_button("DAILY DAVOM ETISH", _show_daily_puzzle, 68))
     else:
-        content.add_child(_button("QAYTA URINISH", _retry_current_puzzle, 68))
-    content.add_child(_button("BOSH MENYU", _show_home, 60))
-
-func _retry_current_puzzle() -> void:
-    _show_puzzle()
+        content.add_child(_button("QAYTA URINISH", _show_puzzle, 68))
