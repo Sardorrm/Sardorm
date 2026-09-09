@@ -1,0 +1,28 @@
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_ui_polish_avoids_per_frame_recursive_tree_scan():
+    code = (ROOT / "src" / "ui_polish.gd").read_text(encoding="utf-8")
+    process = code.split("func _process(delta: float) -> void:", 1)[1].split("func _on_node_added", 1)[0]
+    assert "_polish_tree(" not in process
+    assert "_polish_tree_once(" not in process
+    assert "node_added.connect(_on_node_added)" in code
+
+
+def test_ui_polish_refreshes_safe_area_only_when_layout_changes():
+    code = (ROOT / "src" / "ui_polish.gd").read_text(encoding="utf-8")
+    assert "_last_ui_size" in code
+    assert "_last_screen_size" in code
+    assert "_refresh_safe_area_if_needed(root)" in code
+    assert "if not force and ui.size == _last_ui_size and screen == _last_screen_size:" in code
+
+
+def test_ui_polish_keeps_timer_animation_and_static_button_polish():
+    code = (ROOT / "src" / "ui_polish.gd").read_text(encoding="utf-8")
+    assert 'if timer is Label and timer.text.begins_with("⏱"):' in code
+    assert "_polish_timer(timer)" in code
+    assert "_apply_static_polish(node)" in code
+    assert "button.pressed.is_connected(_on_button_pressed)" in code
