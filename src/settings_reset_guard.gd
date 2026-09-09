@@ -5,6 +5,7 @@ var guarded_buttons: Dictionary = {}
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
+    get_tree().node_removed.connect(_on_node_removed)
     _scan_existing_buttons()
 
 func _scan_existing_buttons() -> void:
@@ -16,6 +17,9 @@ func _scan_existing_buttons() -> void:
 
 func _on_node_added(node: Node) -> void:
     _guard_if_reset_button(node)
+
+func _on_node_removed(node: Node) -> void:
+    guarded_buttons.erase(node.get_instance_id())
 
 func _guard_if_reset_button(node: Node) -> void:
     if not (node is Button) or node.text != RESET_BUTTON_TEXT:
@@ -32,7 +36,8 @@ func _guard_reset_button(button: Button) -> void:
         var callback: Callable = connection.get("callable", Callable())
         if callback.is_valid() and callback.get_method() == "_reset_progress":
             button.pressed.disconnect(callback)
-    button.pressed.connect(_confirm_reset)
+    if not button.pressed.is_connected(_confirm_reset):
+        button.pressed.connect(_confirm_reset)
 
 func _confirm_reset() -> void:
     var root := get_tree().current_scene
