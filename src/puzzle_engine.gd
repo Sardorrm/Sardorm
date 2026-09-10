@@ -104,9 +104,11 @@ func get_puzzle(index: int) -> Dictionary:
 
 func get_categories() -> Array:
     var result: Array = []
+    var seen: Dictionary = {}
     for puzzle in puzzles:
         var category := str(puzzle.get("category", ""))
-        if not category.is_empty() and not result.has(category):
+        if not category.is_empty() and not seen.has(category):
+            seen[category] = true
             result.append(category)
     return result
 
