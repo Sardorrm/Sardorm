@@ -18,7 +18,8 @@ class AndroidPackageMetadataTests(unittest.TestCase):
         cls.project_text = PROJECT.read_text(encoding="utf-8")
 
     def test_application_name_is_release_identity(self) -> None:
-        self.assertRegex(self.project_text, r'^config/name="MindShift"$', re.MULTILINE)
+        match = re.search(r'^config/name="MindShift"$', self.project_text, re.MULTILINE)
+        self.assertIsNotNone(match, "Missing application name MindShift")
 
     def test_application_version_is_semver(self) -> None:
         match = re.search(r'^config/version="([^"]+)"$', self.project_text, re.MULTILINE)
