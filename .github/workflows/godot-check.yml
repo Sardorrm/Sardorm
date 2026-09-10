@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
       - name: Validate project files and puzzle data
         run: |
           set -e
@@ -38,8 +43,10 @@ jobs:
           assert sum(1 for p in puzzles if int(p['difficulty']) == 5) >= 10
           print(f'Validated {len(puzzles)} combined puzzles and gameplay content contracts')
           PY
-      - name: Run Python integrity tests
-        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Run deterministic Python test suite
+        env:
+          PYTHONHASHSEED: '0'
+        run: python scripts/run_tests.py
       - name: Audit Android export configuration
         run: python3 scripts/validate_android_export.py
       - name: Parse project with Godot

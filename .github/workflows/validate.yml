@@ -9,9 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
       - name: Validate puzzle JSON syntax
         run: python -m json.tool data/puzzles.json > /dev/null
       - name: Validate puzzle catalog contract
         run: python scripts/validate_puzzles.py
-      - name: Run Python integrity tests
-        run: python -m unittest discover -s tests -p 'test_*.py'
+      - name: Run deterministic Python test suite
+        env:
+          PYTHONHASHSEED: '0'
+        run: python scripts/run_tests.py
