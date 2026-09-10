@@ -13,7 +13,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
       - name: Validate puzzle JSON syntax
         run: python -m json.tool data/puzzles.json > /dev/null
       - name: Validate puzzle catalog contract
