@@ -1,6 +1,6 @@
 # MindShift Store Assets & Listing Checklist
 
-Release-readiness checklist for Google Play and other Android storefronts. This document tracks required source material; it does not claim that store assets have been uploaded or approved.
+Release-readiness checklist for Google Play and other Android storefronts. This document tracks committed source material; it does not claim that store assets have been uploaded or approved.
 
 ## Product identity
 
@@ -15,10 +15,12 @@ Release-readiness checklist for Google Play and other Android storefronts. This 
 
 ## Icon and graphics
 
-- [ ] Production launcher icon exported from the final artwork
-- [ ] Adaptive icon foreground/background prepared
-- [ ] Icon checked for legibility at small size
-- [ ] Store feature graphic prepared if required by the target storefront
+- [x] Production launcher icon source committed: `assets/store/mindshift_launcher.svg`
+- [x] Adaptive icon foreground source committed: `assets/store/mindshift_adaptive_foreground.svg`
+- [x] Icon source uses the MindShift product identity and contains no debug data
+- [x] Feature graphic source committed: `assets/store/mindshift_feature_graphic.svg`
+- [ ] Final raster/export checked at storefront-required sizes
+- [ ] Final artwork owner-approved for storefront publication
 - [ ] No temporary/debug artwork remains in release assets
 
 ## Screenshots
@@ -51,4 +53,4 @@ Release-readiness checklist for Google Play and other Android storefronts. This 
 
 - Real Android device capture/verification has not been performed in this repository environment.
 - Final package ID/signing credentials depend on the release account.
-- Final store artwork and policy URLs require owner-provided production decisions/assets.
+- Final storefront artwork approval and policy/listing URLs require owner-provided production decisions.

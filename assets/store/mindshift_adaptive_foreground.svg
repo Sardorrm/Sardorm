@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 432 432">
+  <title>MindShift adaptive icon foreground</title>
+  <g transform="translate(0 0)">
+    <path d="M162 158c-23 0-42 19-42 42 0 15 8 29 21 36-7 8-11 18-11 29 0 25 20 45 45 45 16 0 29-8 37-20 8 12 21 20 37 20 25 0 45-20 45-45 0-11-4-21-11-29 13-7 21-21 21-36 0-23-19-42-42-42-9 0-17 3-24 7-7-11-19-19-33-19s-26 8-33 19c-7-4-15-7-24-7Z" fill="none" stroke="#F4F1FF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M216 142v164M151 211h50M281 211h-50M166 258h43M266 258h-43" fill="none" stroke="#7C5CFF" stroke-width="12" stroke-linecap="round"/>
+    <path d="M178 116l38-22 38 22" fill="none" stroke="#6FE7D8" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

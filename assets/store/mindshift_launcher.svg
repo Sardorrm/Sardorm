@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>MindShift launcher icon</title>
+  <desc>Minimal brain-and-shift mark for MindShift</desc>
+  <rect width="512" height="512" rx="112" fill="#101019"/>
+  <circle cx="256" cy="256" r="174" fill="#17172A" stroke="#7C5CFF" stroke-width="12"/>
+  <path d="M190 205c-27 0-49 22-49 49 0 18 10 34 25 43-8 9-13 21-13 34 0 29 23 52 52 52 18 0 34-9 43-23 9 14 25 23 43 23 29 0 52-23 52-52 0-13-5-25-13-34 15-9 25-25 25-43 0-27-22-49-49-49-10 0-20 3-28 8-8-13-22-22-38-22s-30 9-38 22c-8-5-18-8-28-8Z" fill="none" stroke="#F4F1FF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M256 185v198M181 268h54M331 268h-54M198 323h42M314 323h-42" fill="none" stroke="#7C5CFF" stroke-width="13" stroke-linecap="round"/>
+  <path d="M211 154l45-25 45 25" fill="none" stroke="#6FE7D8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
