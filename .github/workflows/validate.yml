@@ -17,6 +17,8 @@ jobs:
         run: python -m json.tool data/puzzles.json > /dev/null
       - name: Validate puzzle catalog contract
         run: python scripts/validate_puzzles.py
+      - name: Validate deterministic release version
+        run: python scripts/validate_versioning.py
       - name: Run deterministic Python test suite
         env:
           PYTHONHASHSEED: '0'
