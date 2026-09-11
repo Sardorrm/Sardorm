@@ -42,6 +42,8 @@ jobs:
           assert sum(1 for p in puzzles if int(p['difficulty']) == 5) >= 10
           print(f'Validated {len(puzzles)} combined puzzles and gameplay content contracts')
           PY
+      - name: Validate deterministic release version
+        run: python3 scripts/validate_versioning.py
       - name: Run deterministic Python test suite
         env:
           PYTHONHASHSEED: '0'
