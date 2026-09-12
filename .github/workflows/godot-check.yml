@@ -55,3 +55,9 @@ jobs:
           set -e
           docker pull barichello/godot-ci:4.3
           docker run --rm -v "$PWD:/project" barichello/godot-ci:4.3 godot --headless --path /project --editor --quit
+      - name: Boot MindShift headless smoke test
+        run: |
+          set -e
+          timeout 8s docker run --rm -v "$PWD:/project" barichello/godot-ci:4.3 godot --headless --path /project --quit-after 3 2>&1 | tee /tmp/mindshift-runtime.log
+          test -s /tmp/mindshift-runtime.log
+          ! grep -E "SCRIPT ERROR|Parse Error|ERROR: Failed to load script|Could not load puzzle|Could not load puzzle repository" /tmp/mindshift-runtime.log
