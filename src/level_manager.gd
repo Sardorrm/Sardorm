@@ -12,8 +12,8 @@ func setup(engine: PuzzleEngine, save_data: Dictionary = {}) -> void:
     if puzzle_engine == null:
         return
     completed_levels = _sanitize_completed(save_data.get("completed_levels", []))
-    var max_index := max(0, puzzle_engine.puzzles.size() - 1)
-    var requested_level := clamp(int(save_data.get("current_level", 0)), 0, max_index)
+    var max_index: int = maxi(0, puzzle_engine.puzzles.size() - 1)
+    var requested_level: int = clampi(int(save_data.get("current_level", 0)), 0, max_index)
     # Never restore a current level beyond the sequentially unlocked frontier.
     current_level = mini(requested_level, completed_levels.size())
 
@@ -55,7 +55,7 @@ func mark_completed(index: int) -> void:
         completed_levels.append(index)
         completed_levels.sort()
     if index + 1 < get_level_count():
-        current_level = max(current_level, index + 1)
+        current_level = maxi(current_level, index + 1)
 
 func set_current_level(index: int) -> bool:
     if not is_unlocked(index):
@@ -70,7 +70,7 @@ func get_progress_count() -> int:
     return completed_levels.size()
 
 func get_progress_percent() -> float:
-    var count := get_level_count()
+    var count: int = get_level_count()
     if count == 0:
         return 0.0
     return float(completed_levels.size()) / float(count) * 100.0
