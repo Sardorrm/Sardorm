@@ -98,8 +98,11 @@ func _is_valid_date_key(value: String) -> bool:
     if value.length() != 10 or value[4] != "-" or value[7] != "-":
         return false
     var parts := value.split("-")
-    if parts.size() != 3 or parts.any(func(part): return not part.is_valid_int()):
+    if parts.size() != 3:
         return false
+    for part in parts:
+        if not part.is_valid_int():
+            return false
     var year := int(parts[0])
     var month := int(parts[1])
     var day := int(parts[2])
