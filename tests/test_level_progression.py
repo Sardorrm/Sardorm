@@ -36,8 +36,8 @@ class LevelProgressionContractTests(unittest.TestCase):
 
     def test_lives_are_bounded_and_recover_over_time(self):
         code = (ROOT / "src" / "life_manager.gd").read_text(encoding="utf-8")
-        self.assertIn("const MAX_LIVES := 3", code)
-        self.assertIn("const RECOVERY_SECONDS := 300", code)
+        self.assertIn("const MAX_LIVES: int = 3", code)
+        self.assertIn("const RECOVERY_SECONDS: int = 300", code)
         self.assertIn("lives = clampi(int(data.get(\"lives\", MAX_LIVES)), 0, MAX_LIVES)", code)
         self.assertIn("lives = mini(MAX_LIVES, lives + recovered)", code)
 
