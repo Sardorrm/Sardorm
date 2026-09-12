@@ -21,7 +21,7 @@ class LevelProgressionContractTests(unittest.TestCase):
 
     def test_current_level_is_capped_to_unlocked_frontier(self):
         code = (ROOT / "src" / "level_manager.gd").read_text(encoding="utf-8")
-        self.assertIn("var requested_level := clamp(int(save_data.get(\"current_level\", 0))", code)
+        self.assertIn("var requested_level: int = clampi(int(save_data.get(\"current_level\", 0))", code)
         self.assertIn("current_level = mini(requested_level, completed_levels.size())", code)
 
     def test_unlock_requires_previous_level(self):
@@ -32,7 +32,7 @@ class LevelProgressionContractTests(unittest.TestCase):
     def test_completed_level_advances_current_level(self):
         code = (ROOT / "src" / "level_manager.gd").read_text(encoding="utf-8")
         self.assertIn("if index + 1 < get_level_count():", code)
-        self.assertIn("current_level = max(current_level, index + 1)", code)
+        self.assertIn("current_level = maxi(current_level, index + 1)", code)
 
     def test_lives_are_bounded_and_recover_over_time(self):
         code = (ROOT / "src" / "life_manager.gd").read_text(encoding="utf-8")
