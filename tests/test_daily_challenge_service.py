@@ -9,7 +9,7 @@ class DailyChallengeServiceContractTests(unittest.TestCase):
         code = (ROOT / "src" / "daily_challenge.gd").read_text(encoding="utf-8")
         self.assertIn("func date_key(unix_time: int = -1) -> String:", code)
         self.assertIn("func seed_for_date(key: String) -> int:", code)
-        self.assertIn("var target := mini(count, puzzle_count)", code)
+        self.assertIn("var target: int = mini(count, puzzle_count)", code)
         self.assertIn("selected.sort()", code)
 
     def test_date_rollover_resets_daily_progress(self):
