@@ -30,6 +30,11 @@ static func from_dict(data: Dictionary) -> PuzzleDefinition:
     puzzle.time_limit_seconds = max(0.0, float(data.get("time_limit_seconds", 0.0)))
     if typeof(data.get("tags", [])) == TYPE_ARRAY:
         puzzle.tags = data.get("tags", []).duplicate()
+    # Localize presentation text only. Canonical answers remain unchanged so
+    # scoring, persistence and validation stay language-independent.
+    var locale := Engine.get_singleton("MindShiftLocale") if Engine.has_singleton("MindShiftLocale") else null
+    if locale != null and locale.has_method("translate_puzzle_text"):
+        puzzle.prompt = locale.translate_puzzle_text(puzzle.id, puzzle.prompt)
     return puzzle
 
 func get_answers() -> Array:
