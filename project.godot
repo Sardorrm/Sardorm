@@ -14,6 +14,7 @@ MindShiftStartupState="*res://src/startup_state.gd"
 MindShiftAppLifecycle="*res://src/app_lifecycle.gd"
 MindShiftSettingsResetGuard="*res://src/settings_reset_guard.gd"
 MindShiftLocale="*res://src/locale_manager.gd"
+MindShiftVisualBackgrounds="*res://src/visual_backgrounds.gd"
 
 [display/window]
 size/viewport_width=720
