@@ -32,9 +32,11 @@ static func from_dict(data: Dictionary) -> PuzzleDefinition:
         puzzle.tags = data.get("tags", []).duplicate()
     # Localize presentation text only. Canonical answers remain unchanged so
     # scoring, persistence and validation stay language-independent.
-    var locale := Engine.get_singleton("MindShiftLocale") if Engine.has_singleton("MindShiftLocale") else null
-    if locale != null and locale.has_method("translate_puzzle_text"):
-        puzzle.prompt = locale.translate_puzzle_text(puzzle.id, puzzle.prompt)
+    var main_loop := Engine.get_main_loop()
+    if main_loop != null and main_loop is SceneTree:
+        var locale := main_loop.root.get_node_or_null("MindShiftLocale")
+        if locale != null and locale.has_method("translate_puzzle_text"):
+            puzzle.prompt = locale.translate_puzzle_text(puzzle.id, puzzle.prompt)
     return puzzle
 
 func get_answers() -> Array:
