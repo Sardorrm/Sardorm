@@ -42,6 +42,12 @@ class DailyChallengeServiceContractTests(unittest.TestCase):
         self.assertIn('var key := str(item).strip_edges()', code)
         self.assertIn("and not result.has(key)", code)
 
+    def test_date_validation_uses_parse_safe_explicit_iteration(self):
+        code = (ROOT / "src" / "daily_challenge_service.gd").read_text(encoding="utf-8")
+        self.assertIn("for part in parts:", code)
+        self.assertIn("if not part.is_valid_int():", code)
+        self.assertNotIn("parts.any(func(part)", code)
+
 
 if __name__ == "__main__":
     unittest.main()
