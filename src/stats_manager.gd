@@ -22,7 +22,7 @@ func load_from_dict(data: Dictionary) -> void:
     category_stats = categories.duplicate(true) if typeof(categories) == TYPE_DICTIONARY else {}
 
 func record_solved(seconds: float, category: String = "", score: int = 0) -> void:
-    var elapsed := max(seconds, 0.0)
+    var elapsed: float = maxf(seconds, 0.0)
     solved += 1
     total_score += max(0, score)
     total_time_seconds += elapsed
@@ -31,7 +31,7 @@ func record_solved(seconds: float, category: String = "", score: int = 0) -> voi
     _record_category(category, true, elapsed)
 
 func record_failed(category: String = "", seconds: float = 0.0) -> void:
-    var elapsed := max(seconds, 0.0)
+    var elapsed: float = maxf(seconds, 0.0)
     failed += 1
     total_time_seconds += elapsed
     attempt_counted_time_seconds += elapsed
