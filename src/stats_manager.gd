@@ -64,10 +64,10 @@ func get_average_time() -> float:
 func get_profile() -> Dictionary:
     if solved + failed == 0:
         return {"name": "Yangi fikrlovchi", "score": 0.0}
-    var accuracy_score := get_accuracy()
-    var speed_score := clamp(100.0 - get_average_time() * 2.0, 0.0, 100.0)
-    var score := accuracy_score * 0.7 + speed_score * 0.3
-    var name := "Analitik"
+    var accuracy_score: float = get_accuracy()
+    var speed_score: float = clampf(100.0 - get_average_time() * 2.0, 0.0, 100.0)
+    var score: float = accuracy_score * 0.7 + speed_score * 0.3
+    var name: String = "Analitik"
     if score >= 85.0:
         name = "MindShift Master"
     elif score >= 70.0:
