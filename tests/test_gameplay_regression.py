@@ -50,7 +50,7 @@ class GameplayRegressionContractTests(unittest.TestCase):
         self.assertIn("if lives.is_empty():", main)
         self.assertIn("_show_lives_empty()", main)
         self.assertIn("seconds_to_next_life()", main)
-        self.assertIn("const RECOVERY_SECONDS := 300", lives)
+        self.assertIn("const RECOVERY_SECONDS: int = 300", lives)
 
 
 if __name__ == "__main__":
