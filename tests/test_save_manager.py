@@ -19,6 +19,9 @@ class SaveManagerContractTests(unittest.TestCase):
             'data.get("hints_used", 0)',
             'data.get("settings", {})',
             'var settings := defaults["settings"].merged(value)',
+            'settings["language"] = language',
+            'settings["sound"] = bool(settings.get("sound", true))',
+            'settings["haptics"] = bool(settings.get("haptics", true))',
             'result["version"] = SAVE_VERSION',
         ]:
             self.assertIn(token, code)
