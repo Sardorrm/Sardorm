@@ -18,7 +18,7 @@ class SaveManagerContractTests(unittest.TestCase):
             'data.get("completed_levels", data.get("completed", []))',
             'data.get("hints_used", 0)',
             'data.get("settings", {})',
-            'defaults["settings"].merged(settings)',
+            'var settings := defaults["settings"].merged(value)',
             'result["version"] = SAVE_VERSION',
         ]:
             self.assertIn(token, code)
