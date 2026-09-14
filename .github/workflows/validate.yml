@@ -20,6 +20,32 @@ jobs:
       - name: Validate deterministic release version
         run: python scripts/validate_versioning.py
       - name: Run deterministic Python test suite
+        id: python_tests
+        continue-on-error: true
         env:
           PYTHONHASHSEED: '0'
-        run: python scripts/run_tests.py
+        run: |
+          set -o pipefail
+          python scripts/run_tests.py 2>&1 | tee test-output.txt
+      - name: Publish Python test failure details
+        if: steps.python_tests.outcome == 'failure' && github.event_name == 'push'
+        uses: actions/github-script@v7
+        env:
+          TEST_OUTPUT: ${{ steps.python_tests.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const raw = fs.readFileSync('test-output.txt', 'utf8');
+            const lines = raw.split('\n');
+            const useful = lines.filter(line => /FAIL|ERROR|^test_|AssertionError|Traceback|Ran \d+ tests|FAILED|OK/.test(line));
+            const body = `CI Python test failure diagnostics for ${context.sha}:\n\n\\`\\`\\`text\n${useful.slice(-160).join('\n')}\n\\`\\`\\``;
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body
+            });
+      - name: Fail validation after diagnostics are published
+        if: steps.python_tests.outcome == 'failure'
+        run: exit 1
