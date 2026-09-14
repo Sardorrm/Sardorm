@@ -4,16 +4,25 @@ extends Node
 const MIN_MARGIN := 20
 const CONTENT_GAP := 16
 
+var _refresh_pending := false
+
 func _ready() -> void:
-    get_viewport().size_changed.connect(_refresh)
+    get_viewport().size_changed.connect(_queue_refresh)
     get_tree().node_added.connect(_on_node_added)
-    call_deferred("_refresh")
+    _queue_refresh()
 
 func _on_node_added(node: Node) -> void:
     if node is Control:
-        call_deferred("_refresh")
+        _queue_refresh()
+
+func _queue_refresh() -> void:
+    if _refresh_pending:
+        return
+    _refresh_pending = true
+    call_deferred("_refresh")
 
 func _refresh() -> void:
+    _refresh_pending = false
     var shell := get_tree().current_scene
     if shell == null:
         return
