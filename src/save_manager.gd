@@ -15,7 +15,7 @@ static func _defaults() -> Dictionary:
         "daily_challenges": {},
         "streak": {"current_streak": 0, "best_streak": 0, "last_completed_date": ""},
         "lives": {"lives": 3, "last_loss_unix": 0},
-        "settings": {"sound": true, "haptics": true}
+        "settings": {"sound": true, "haptics": true, "language": "uz"}
     }
 
 static func load_progress() -> Dictionary:
@@ -44,7 +44,6 @@ static func load_progress() -> Dictionary:
     if typeof(settings) == TYPE_DICTIONARY:
         result["settings"] = defaults["settings"].merged(settings)
 
-    # v5 and earlier saves remain readable; missing newer fields receive defaults.
     if source_version < 5 and result["streak"].is_empty():
         result["streak"] = defaults["streak"].duplicate(true)
     if source_version < 4 and result["lives"].is_empty():
