@@ -22,6 +22,14 @@ class LocaleRuntimeContractTests(unittest.TestCase):
         self.assertIn('for code in LANGUAGES:', code)
         self.assertIn('button.name = "Language_" + code', code)
 
+    def test_language_switch_is_reversible_for_dynamic_ui(self):
+        code = (ROOT / "src" / "locale_runtime_fixed.gd").read_text(encoding="utf-8")
+        self.assertIn('get_meta("mindshift_locale_key", b.text)', code)
+        self.assertIn('b.set_meta("mindshift_locale_key", key)', code)
+        self.assertIn('get_meta("mindshift_locale_key", l.text)', code)
+        self.assertIn('l.set_meta("mindshift_locale_key", label_key)', code)
+        self.assertIn('get_meta("mindshift_locale_key", e.placeholder_text)', code)
+
     def test_broken_duplicate_runtime_was_removed(self):
         self.assertFalse((ROOT / "src" / "locale_runtime.gd").exists())
 
