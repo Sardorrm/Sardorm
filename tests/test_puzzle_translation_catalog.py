@@ -21,7 +21,7 @@ class PuzzleTranslationCatalogTests(unittest.TestCase):
     def test_save_defaults_keep_uzbek_as_language_without_resetting_progress(self):
         code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
         self.assertIn('"language": "uz"', code)
-        self.assertIn('result["completed_levels"] = completed.duplicate()', code)
+        self.assertIn('result["completed_levels"] = _normalize_completed_levels(', code)
 
 
 if __name__ == "__main__":
