@@ -62,13 +62,23 @@ func _refresh() -> void:
 func _translate_tree(node: Node) -> void:
     if node is Button:
         var b := node as Button
-        b.text = translate(b.text)
+        if not b.name.begins_with("Language_"):
+            var key := str(b.get_meta("mindshift_locale_key", b.text))
+            if TEXTS["uz"].has(key):
+                b.set_meta("mindshift_locale_key", key)
+                b.text = translate(key)
     elif node is Label:
         var l := node as Label
-        l.text = translate(l.text)
+        var label_key := str(l.get_meta("mindshift_locale_key", l.text))
+        if TEXTS["uz"].has(label_key):
+            l.set_meta("mindshift_locale_key", label_key)
+            l.text = translate(label_key)
     elif node is LineEdit:
         var e := node as LineEdit
-        e.placeholder_text = translate(e.placeholder_text)
+        var placeholder_key := str(e.get_meta("mindshift_locale_key", e.placeholder_text))
+        if TEXTS["uz"].has(placeholder_key):
+            e.set_meta("mindshift_locale_key", placeholder_key)
+            e.placeholder_text = translate(placeholder_key)
     for child in node.get_children():
         _translate_tree(child)
 
@@ -87,6 +97,7 @@ func _refresh_selector() -> void:
     selector.add_theme_constant_override("separation", 6)
     parent.add_child(selector)
     var label := Label.new()
+    label.set_meta("mindshift_locale_key", "Til")
     label.text = translate("Til")
     label.custom_minimum_size = Vector2(80, 52)
     label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
