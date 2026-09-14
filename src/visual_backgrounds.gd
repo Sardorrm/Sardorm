@@ -9,8 +9,10 @@ const CATEGORY_BGS := {
     "ASSUMPTION": "res://assets/backgrounds/assumption.svg",
     "MINDSHIFT": "res://assets/backgrounds/mindshift_reality.svg"
 }
+
 var _background: TextureRect
 var _installed := false
+var _texture_cache: Dictionary = {}
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -40,7 +42,7 @@ func _try_install() -> void:
         _installed = true
 
 func _make_background(ui: Control, path: String) -> TextureRect:
-    var texture := load(path) as Texture2D
+    var texture := _load_texture(path)
     if texture == null:
         return null
     var background := TextureRect.new()
@@ -65,6 +67,14 @@ func _update_from_label(node: Label) -> void:
             return
 
 func _set_background(path: String) -> void:
-    var texture := load(path) as Texture2D
+    var texture := _load_texture(path)
     if texture != null and is_instance_valid(_background):
         _background.texture = texture
+
+func _load_texture(path: String) -> Texture2D:
+    if _texture_cache.has(path):
+        return _texture_cache[path] as Texture2D
+    var texture := load(path) as Texture2D
+    if texture != null:
+        _texture_cache[path] = texture
+    return texture
