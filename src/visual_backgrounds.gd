@@ -30,7 +30,13 @@ func _try_install() -> void:
     var scene := get_tree().current_scene
     if scene == null:
         return
-    var ui := scene.find_child("Control", true, false) as Control
+    var ui: Control = null
+    for child in scene.get_children():
+        if child is Control:
+            ui = child as Control
+            break
+    if ui == null:
+        ui = scene.find_child("Control", true, false) as Control
     if ui == null:
         return
     var existing := ui.find_child("MindShiftVisualBackground", true, false) as TextureRect
