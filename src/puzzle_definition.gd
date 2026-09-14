@@ -34,9 +34,13 @@ static func from_dict(data: Dictionary) -> PuzzleDefinition:
     # scoring, persistence and validation stay language-independent.
     var main_loop := Engine.get_main_loop()
     if main_loop != null and main_loop is SceneTree:
-        var locale := main_loop.root.get_node_or_null("MindShiftLocale")
-        if locale != null and locale.has_method("translate_puzzle_text"):
-            puzzle.prompt = locale.translate_puzzle_text(puzzle.id, puzzle.prompt)
+        var root := main_loop.root
+        var locale := root.get_node_or_null("MindShiftLocaleRuntime")
+        if locale != null:
+            if locale.has_method("translate_puzzle_text"):
+                puzzle.prompt = locale.translate_puzzle_text(puzzle.id, puzzle.prompt)
+            elif locale.has_method("translate"):
+                puzzle.prompt = locale.translate(puzzle.prompt)
     return puzzle
 
 func get_answers() -> Array:
