@@ -13,6 +13,7 @@ const CATEGORY_BGS := {
 var _background: TextureRect
 var _installed := false
 var _texture_cache: Dictionary = {}
+var _last_category := ""
 
 func _ready() -> void:
     get_tree().node_added.connect(_on_node_added)
@@ -50,6 +51,7 @@ func _make_background(ui: Control, path: String) -> TextureRect:
     background.texture = texture
     background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
     background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+    background.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
     background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     background.mouse_filter = Control.MOUSE_FILTER_IGNORE
     background.z_index = -10
@@ -60,11 +62,18 @@ func _make_background(ui: Control, path: String) -> TextureRect:
 func _update_from_label(node: Label) -> void:
     if not _installed or not is_instance_valid(_background):
         return
-    var text := node.text.to_upper()
+    var category := _category_from_label(node.text)
+    if category.is_empty() or category == _last_category:
+        return
+    _last_category = category
+    _set_background(CATEGORY_BGS[category])
+
+func _category_from_label(value: String) -> String:
+    var text := value.strip_edges().to_upper()
     for category in CATEGORY_BGS:
         if text.begins_with(category + "  •") or text.begins_with(category + " •"):
-            _set_background(CATEGORY_BGS[category])
-            return
+            return category
+    return ""
 
 func _set_background(path: String) -> void:
     var texture := _load_texture(path)
