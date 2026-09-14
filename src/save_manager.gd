@@ -18,6 +18,32 @@ static func _defaults() -> Dictionary:
         "settings": {"sound": true, "haptics": true, "language": "uz"}
     }
 
+static func _normalize_completed_levels(value) -> Array:
+    if typeof(value) != TYPE_ARRAY:
+        return []
+    var normalized: Array = []
+    var seen := {}
+    for raw_level in value:
+        var level := int(raw_level)
+        if level < 0 or seen.has(level):
+            continue
+        seen[level] = true
+        normalized.append(level)
+    normalized.sort()
+    return normalized
+
+static func _normalize_settings(value, defaults: Dictionary) -> Dictionary:
+    if typeof(value) != TYPE_DICTIONARY:
+        return defaults["settings"].duplicate(true)
+    var settings := defaults["settings"].merged(value)
+    var language := str(settings.get("language", "uz")).to_lower()
+    if language not in ["uz", "ru", "en"]:
+        language = "uz"
+    settings["language"] = language
+    settings["sound"] = bool(settings.get("sound", true))
+    settings["haptics"] = bool(settings.get("haptics", true))
+    return settings
+
 static func load_progress() -> Dictionary:
     var defaults := _defaults()
     if not FileAccess.file_exists(SAVE_PATH):
@@ -32,18 +58,14 @@ static func load_progress() -> Dictionary:
     var source_version := int(data.get("version", 1))
     result["version"] = SAVE_VERSION
     result["current_level"] = max(0, int(data.get("current_level", 0)))
-    var completed = data.get("completed_levels", data.get("completed", []))
-    if typeof(completed) == TYPE_ARRAY:
-        result["completed_levels"] = completed.duplicate()
+    result["completed_levels"] = _normalize_completed_levels(data.get("completed_levels", data.get("completed", [])))
     result["hints_used"] = max(0, int(data.get("hints_used", 0)))
     for key in ["stats", "achievements", "daily_challenges", "streak", "lives"]:
         var value = data.get(key, {})
         if typeof(value) == TYPE_DICTIONARY:
             result[key] = value.duplicate(true)
-    var settings = data.get("settings", {})
-    if typeof(settings) == TYPE_DICTIONARY:
-        result["settings"] = defaults["settings"].merged(settings)
 
+    result["settings"] = _normalize_settings(data.get("settings", {}), defaults)
     if source_version < 5 and result["streak"].is_empty():
         result["streak"] = defaults["streak"].duplicate(true)
     if source_version < 4 and result["lives"].is_empty():
@@ -58,14 +80,14 @@ static func save_progress(current_level: int, completed_levels: Array, hints_use
     var data := {
         "version": SAVE_VERSION,
         "current_level": max(0, current_level),
-        "completed_levels": completed_levels.duplicate(),
+        "completed_levels": _normalize_completed_levels(completed_levels),
         "hints_used": max(0, hints_used),
         "stats": stats.duplicate(true),
         "achievements": achievements.duplicate(true),
         "daily_challenges": daily_challenges.duplicate(true),
         "streak": streak.duplicate(true) if not streak.is_empty() else defaults["streak"],
         "lives": lives.duplicate(true) if not lives.is_empty() else defaults["lives"],
-        "settings": defaults["settings"].merged(settings)
+        "settings": _normalize_settings(settings, defaults)
     }
     file.store_string(JSON.stringify(data))
     return file.get_error() == OK
