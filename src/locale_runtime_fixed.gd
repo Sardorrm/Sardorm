@@ -2,13 +2,14 @@ class_name LocaleRuntimeFixed
 extends Node
 
 const LANGUAGES := ["uz", "ru", "en"]
+const PUZZLE_TRANSLATIONS := preload("res://src/puzzle_translations.gd")
 const TEXTS := {
-    "uz": {"DAVOM ETISH":"DAVOM ETISH", "BUGUNGI CHALLENGE":"BUGUNGI CHALLENGE", "DARAJALAR":"DARAJALAR", "STATISTIKA":"STATISTIKA", "YUTUQLAR":"YUTUQLAR", "SOZLAMALAR":"SOZLAMALAR", "ORTGA":"ORTGA", "BOSHLASH MENYUSI":"BOSHLASH MENYUSI", "BOSH MENYU":"BOSH MENYU", "KEYINGISI":"KEYINGISI", "KEYINGI DARAJA":"KEYINGI DARAJA", "QAYTA URINISH":"QAYTA URINISH", "TEKSHIRISH":"TEKSHIRISH", "HINT":"ISHORA", "PAUZA":"PAUZA", "CHALLENGE":"CHALLENGE", "JONLAR TUGADI":"JONLAR TUGADI", "Til":"Til", "PROGRESSNI TOZALASH":"PROGRESSNI TOZALASH", "Barcha darajalar tugadi!":"Barcha darajalar tugadi!", "BOSHLASH / DAVOM ETISH":"BOSHLASH / DAVOM ETISH", "Javobingiz...":"Javobingiz...", "Raqam kiriting...":"Raqam kiriting..."},
-    "ru": {"DAVOM ETISH":"ПРОДОЛЖИТЬ", "BUGUNGI CHALLENGE":"СЕГОДНЯШНИЙ ЧЕЛЛЕНДЖ", "DARAJALAR":"УРОВНИ", "STATISTIKA":"СТАТИСТИКА", "YUTUQLAR":"ДОСТИЖЕНИЯ", "SOZLAMALAR":"НАСТРОЙКИ", "ORTGA":"НАЗАД", "BOSHLASH MENYUSI":"ГЛАВНОЕ МЕНЮ", "BOSH MENYU":"ГЛАВНОЕ МЕНЮ", "KEYINGISI":"СЛЕДУЮЩИЙ", "KEYINGI DARAJA":"СЛЕДУЮЩИЙ УРОВЕНЬ", "QAYTA URINISH":"ПОВТОРИТЬ", "TEKSHIRISH":"ПРОВЕРИТЬ", "HINT":"ПОДСКАЗКА", "PAUZA":"ПАУЗА", "CHALLENGE":"ЧЕЛЛЕНДЖ", "JONLAR TUGADI":"ЖИЗНИ ЗАКОНЧИЛИСЬ", "Til":"Язык", "PROGRESSNI TOZALASH":"СБРОСИТЬ ПРОГРЕСС", "Barcha darajalar tugadi!":"Все уровни пройдены!", "BOSHLASH / DAVOM ETISH":"НАЧАТЬ / ПРОДОЛЖИТЬ", "Javobingiz...":"Ваш ответ...", "Raqam kiriting...":"Введите число..."},
-    "en": {"DAVOM ETISH":"CONTINUE", "BUGUNGI CHALLENGE":"TODAY’S CHALLENGE", "DARAJALAR":"LEVELS", "STATISTIKA":"STATS", "YUTUQLAR":"ACHIEVEMENTS", "SOZLAMALAR":"SETTINGS", "ORTGA":"BACK", "BOSHLASH MENYUSI":"MAIN MENU", "BOSH MENYU":"MAIN MENU", "KEYINGISI":"NEXT", "KEYINGI DARAJA":"NEXT LEVEL", "QAYTA URINISH":"RETRY", "TEKSHIRISH":"CHECK", "HINT":"HINT", "PAUZA":"PAUSE", "CHALLENGE":"CHALLENGE", "JONLAR TUGADI":"OUT OF LIVES", "Til":"Language", "PROGRESSNI TOZALASH":"RESET PROGRESS", "Barcha darajalar tugadi!":"All levels complete!", "BOSHLASH / DAVOM ETISH":"START / CONTINUE", "Javobingiz...":"Your answer...", "Raqam kiriting...":"Enter a number..."}
+    "uz": {"DAVOM ETISH":"DAVOM ETISH", "BUGUNGI CHALLENGE":"BUGUNGI CHALLENGE", "DARAJALAR":"DARAJALAR", "STATISTIKA":"STATISTIKA", "YUTUQLAR":"YUTUQLAR", "SOZLAMALAR":"SOZLAMALAR", "ORTGA":"ORTGA", "BOSHLASH MENYUSI":"BOSHLASH MENYUSI", "BOSH MENYU":"BOSH MENYU", "KEYINGISI":"KEYINGISI", "KEYINGI DARAJA":"KEYINGI DARAJA", "QAYTA URINISH":"QAYTA URINISH", "TEKSHIRISH":"TEKSHIRISH", "HINT":"ISHORA", "PAUZA":"PAUZA", "CHALLENGE":"CHALLENGE", "JONLAR TUGADI":"JONLAR TUGADI", "Til":"Til", "PROGRESSNI TOZALASH":"PROGRESSNI TOZALASH", "Barcha darajalar tugadi!":"Barcha darajalar tugadi!", "BOSHLASH / DAVOM ETISH":"BOSHLASH / DAVOM ETISH", "Javobingiz...":"Javobingiz...", "Raqam kiriting...":"Raqam kiriting...", "Darajalar":"Darajalar", "Yechilgan":"Yechilgan", "Jonlar tugadi":"Jonlar tugadi", "Keyingi jon":"Keyingi jon", "Barcha darajalar tugadi":"Barcha darajalar tugadi", "Bugungi":"Bugungi", "puzzle yakunlandi.":"puzzle yakunlandi."},
+    "ru": {"DAVOM ETISH":"ПРОДОЛЖИТЬ", "BUGUNGI CHALLENGE":"СЕГОДНЯШНИЙ ЧЕЛЛЕНДЖ", "DARAJALAR":"УРОВНИ", "STATISTIKA":"СТАТИСТИКА", "YUTUQLAR":"ДОСТИЖЕНИЯ", "SOZLAMALAR":"НАСТРОЙКИ", "ORTGA":"НАЗАД", "BOSHLASH MENYUSI":"ГЛАВНОЕ МЕНЮ", "BOSH MENYU":"ГЛАВНОЕ МЕНЮ", "KEYINGISI":"СЛЕДУЮЩИЙ", "KEYINGI DARAJA":"СЛЕДУЮЩИЙ УРОВЕНЬ", "QAYTA URINISH":"ПОВТОРИТЬ", "TEKSHIRISH":"ПРОВЕРИТЬ", "HINT":"ПОДСКАЗКА", "PAUZA":"ПАУЗА", "CHALLENGE":"ЧЕЛЛЕНДЖ", "JONLAR TUGADI":"ЖИЗНИ ЗАКОНЧИЛИСЬ", "Til":"Язык", "PROGRESSNI TOZALASH":"СБРОСИТЬ ПРОГРЕСС", "Barcha darajalar tugadi!":"Все уровни пройдены!", "BOSHLASH / DAVOM ETISH":"НАЧАТЬ / ПРОДОЛЖИТЬ", "Javobingiz...":"Ваш ответ...", "Raqam kiriting...":"Введите число...", "Darajalar":"Уровни", "Yechilgan":"Решено", "Jonlar tugadi":"Жизни закончились", "Keyingi jon":"Следующая жизнь", "Keyingi jon:":"Следующая жизнь:", "Barcha darajalar tugadi":"Все уровни пройдены", "Bugungi":"Сегодня", "puzzle yakunlandi.":"головоломки завершены."},
+    "en": {"DAVOM ETISH":"CONTINUE", "BUGUNGI CHALLENGE":"TODAY’S CHALLENGE", "DARAJALAR":"LEVELS", "STATISTIKA":"STATS", "YUTUQLAR":"ACHIEVEMENTS", "SOZLAMALAR":"SETTINGS", "ORTGA":"BACK", "BOSHLASH MENYUSI":"MAIN MENU", "BOSH MENYU":"MAIN MENU", "KEYINGISI":"NEXT", "KEYINGI DARAJA":"NEXT LEVEL", "QAYTA URINISH":"RETRY", "TEKSHIRISH":"CHECK", "HINT":"HINT", "PAUZA":"PAUSE", "CHALLENGE":"CHALLENGE", "JONLAR TUGADI":"OUT OF LIVES", "Til":"Language", "PROGRESSNI TOZALASH":"RESET PROGRESS", "Barcha darajalar tugadi!":"All levels complete!", "BOSHLASH / DAVOM ETISH":"START / CONTINUE", "Javobingiz...":"Your answer...", "Raqam kiriting...":"Enter a number...", "Darajalar":"Levels", "Yechilgan":"Solved", "Jonlar tugadi":"Out of lives", "Keyingi jon":"Next life", "Keyingi jon:":"Next life:", "Barcha darajalar tugadi":"All levels complete", "Bugungi":"Today", "puzzle yakunlandi.":"puzzles completed."}
 }
 
-const PUZZLES := {
+const LEGACY_PUZZLES := {
     "mvp-001": {"ru":"Какое число следующее? 2, 4, 8, 16, ?", "en":"What number comes next? 2, 4, 8, 16, ?"},
     "mvp-002": {"ru":"В коробке 3 красных и 3 синих шара. Сколько шаров минимум нужно взять вслепую, чтобы гарантированно получить два одного цвета?", "en":"A box has 3 red and 3 blue balls. What is the minimum number to draw blind to guarantee two of the same color?"},
     "mvp-003": {"ru":"Что дальше? 1, 1, 2, 3, 5, 8, ?", "en":"What comes next? 1, 1, 2, 3, 5, 8, ?"},
@@ -26,7 +27,7 @@ var selector: HBoxContainer
 
 func _ready() -> void:
     var data := SaveManager.load_progress()
-    var stored := str(data.get("settings", {}).get("language", "uz"))
+    var stored := str(data.get("settings", {}).get("language", "uz")).to_lower()
     language = stored if stored in LANGUAGES else "uz"
     get_tree().node_added.connect(_on_node_added)
     call_deferred("_refresh")
@@ -37,14 +38,18 @@ func translate(text: String) -> String:
 func translate_puzzle_text(puzzle_id: String, fallback: String) -> String:
     if language == "uz":
         return fallback
-    if not PUZZLES.has(puzzle_id):
-        return fallback
-    return str(PUZZLES[puzzle_id].get(language, fallback))
+    var translated := PuzzleTranslations.get(puzzle_id, language, "")
+    if not translated.is_empty():
+        return translated
+    if LEGACY_PUZZLES.has(puzzle_id):
+        return str(LEGACY_PUZZLES[puzzle_id].get(language, fallback))
+    return fallback
 
 func set_language(next_language: String) -> void:
-    if next_language not in LANGUAGES:
+    var normalized := next_language.to_lower()
+    if normalized not in LANGUAGES:
         return
-    language = next_language
+    language = normalized
     _persist()
     _refresh()
 
