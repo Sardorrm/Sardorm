@@ -16,6 +16,7 @@ MindShiftSettingsResetGuard="*res://src/settings_reset_guard.gd"
 MindShiftLocale="*res://src/locale_manager.gd"
 MindShiftVisualBackgrounds="*res://src/visual_backgrounds.gd"
 MindShiftLocaleRuntime="*res://src/locale_runtime_fixed.gd"
+MindShiftSafeArea="*res://src/safe_area_manager.gd"
 
 [display/window]
 size/viewport_width=720
