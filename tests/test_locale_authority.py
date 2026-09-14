@@ -17,11 +17,12 @@ class LocaleAuthorityContractTests(unittest.TestCase):
         self.assertIn('locale.has_method("translate_puzzle_text")', code)
         self.assertIn('puzzle.prompt = locale.translate_puzzle_text', code)
 
-    def test_runtime_locale_supports_puzzle_translation_without_touching_answers(self):
+    def test_runtime_locale_supports_shared_puzzle_translation_catalog_without_touching_answers(self):
         code = (ROOT / "src/locale_runtime_fixed.gd").read_text(encoding="utf-8")
         self.assertIn('func translate_puzzle_text(puzzle_id: String, fallback: String) -> String:', code)
+        self.assertIn('const PUZZLE_TRANSLATIONS := preload("res://src/puzzle_translations.gd")', code)
+        self.assertIn('PuzzleTranslations.get(puzzle_id, language, "")', code)
         self.assertIn('if language == "uz":', code)
-        self.assertIn('const PUZZLES := {', code)
         self.assertNotIn('answer =', code)
 
 
