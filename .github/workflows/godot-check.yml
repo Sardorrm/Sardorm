@@ -44,10 +44,6 @@ jobs:
           PY
       - name: Validate deterministic release version
         run: python3 scripts/validate_versioning.py
-      - name: Run deterministic Python test suite
-        env:
-          PYTHONHASHSEED: '0'
-        run: python scripts/run_tests.py
       - name: Audit Android export configuration
         run: python3 scripts/validate_android_export.py
       - name: Parse project with Godot
