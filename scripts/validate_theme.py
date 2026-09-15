@@ -21,9 +21,9 @@ def main() -> None:
     if '[gd_resource type="Theme" load_steps=9 format=3]' not in text:
         raise SystemExit("theme load_steps contract is invalid")
 
-    if 'SubResource type="StyleBoxFlat" id="ButtonFocus"' not in text:
+    if '[sub_resource type="StyleBoxFlat" id="ButtonFocus"]' not in text:
         raise SystemExit("premium ButtonFocus style is missing")
-    if 'SubResource type="StyleBoxFlat" id="LineEditFocus"' not in text:
+    if '[sub_resource type="StyleBoxFlat" id="LineEditFocus"]' not in text:
         raise SystemExit("premium LineEditFocus style is missing")
 
     for control in REQUIRED_CONTROLS:
