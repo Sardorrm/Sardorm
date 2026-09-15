@@ -8,6 +8,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / "project.godot"
 SEMVER = re.compile(r'^config/version="(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"$', re.MULTILINE)
+MAIN_SCENE = re.compile(r'^run/main_scene="res://src/MainScene\.tscn"$', re.MULTILINE)
+LAUNCHER_ICON = re.compile(r'^config/icon="res://assets/store/mindshift_launcher\.svg"$', re.MULTILINE)
 
 
 class ProjectReleaseContractTests(unittest.TestCase):
@@ -17,8 +19,8 @@ class ProjectReleaseContractTests(unittest.TestCase):
 
     def test_android_first_project_metadata_is_complete(self) -> None:
         self.assertIn('config/name="MindShift"', self.text)
-        self.assertRegex(self.text, r'^run/main_scene="res://src/MainScene\.tscn"$', re.MULTILINE)
-        self.assertRegex(self.text, r'^config/icon="res://assets/store/mindshift_launcher\.svg"$', re.MULTILINE)
+        self.assertRegex(self.text, MAIN_SCENE)
+        self.assertRegex(self.text, LAUNCHER_ICON)
         self.assertIn('theme/custom="res://themes/mindshift_theme.tres"', self.text)
 
     def test_release_version_is_semver(self) -> None:
@@ -41,7 +43,7 @@ class ProjectReleaseContractTests(unittest.TestCase):
             "MindShiftSafeArea",
             "MindShiftMotion",
         ):
-            self.assertRegex(self.text, rf'^"?{re.escape(name)}"?=', re.MULTILINE)
+            self.assertRegex(self.text, re.compile(rf'^"?{re.escape(name)}"?=', re.MULTILINE))
 
 
 if __name__ == "__main__":
