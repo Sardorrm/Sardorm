@@ -29,7 +29,7 @@ class PremiumThemeControlsTests(unittest.TestCase):
         for control in ("Button", "OptionButton", "CheckButton"):
             self.assertIn(f"{control}/font_sizes/font_size = 19", self.text)
             self.assertIn(
-                f"{control}/colors/font_disabled_color = Color(0.40, 0.41, 0.50, 1)",
+                f"{control}/colors/font_disabled_color = Color(0.52, 0.53, 0.62, 1)",
                 self.text,
             )
 
@@ -57,8 +57,8 @@ class PremiumThemeControlsTests(unittest.TestCase):
 
     def test_wcag_informed_contrast_floor(self):
         self.assertGreaterEqual(
-            _contrast_ratio((0.40, 0.41, 0.50), (0.07, 0.07, 0.10)),
-            3.0,
+            _contrast_ratio((0.52, 0.53, 0.62), (0.07, 0.07, 0.10)),
+            4.5,
         )
         self.assertGreaterEqual(
             _contrast_ratio((0.48, 0.49, 0.58), (0.08, 0.08, 0.12)),
