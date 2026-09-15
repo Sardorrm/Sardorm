@@ -48,17 +48,17 @@ class PremiumThemeValidatorTests(unittest.TestCase):
     def test_validator_rejects_disabled_input_contrast_regression(self):
         self._run_broken_theme(
             (
-                "LineEdit/colors/font_disabled_color = Color(0.52, 0.53, 0.62, 1)",
+                "LineEdit/colors/font_disabled_color = Color(0.58, 0.59, 0.66, 1)",
                 "LineEdit/colors/font_disabled_color = Color(0.20, 0.20, 0.25, 1)",
             ),
             "disabled input text contrast",
         )
 
-    def test_validator_rejects_input_focus_contrast_regression(self):
+    def test_validator_rejects_input_focus_resource(self):
         self._run_broken_theme(
             (
-                "[sub_resource type=\"StyleBoxFlat\" id=\"LineEditFocus\"]",
-                "[sub_resource type=\"StyleBoxFlat\" id=\"LineEditFocus_REMOVED\"]",
+                '[sub_resource type="StyleBoxFlat" id="LineEditFocus"]',
+                '[sub_resource type="StyleBoxFlat" id="LineEditFocus_REMOVED"]',
             ),
             "premium LineEditFocus style is missing",
         )
