@@ -30,6 +30,30 @@ class VersioningTests(unittest.TestCase):
         text = (ROOT / "project.godot").read_text(encoding="utf-8")
         self.assertEqual(text.count("config/version="), 1)
 
+    def test_release_validator_rejects_mismatched_expected_version(self):
+        previous = os.environ.get("MINDSHIFT_VERSION")
+        try:
+            os.environ["MINDSHIFT_VERSION"] = "9.9.9"
+            with self.assertRaises(AssertionError):
+                validate_versioning.main()
+        finally:
+            if previous is None:
+                os.environ.pop("MINDSHIFT_VERSION", None)
+            else:
+                os.environ["MINDSHIFT_VERSION"] = previous
+
+    def test_release_validator_rejects_non_semver_expected_version(self):
+        previous = os.environ.get("MINDSHIFT_VERSION")
+        try:
+            os.environ["MINDSHIFT_VERSION"] = "0.1"
+            with self.assertRaises(AssertionError):
+                validate_versioning.main()
+        finally:
+            if previous is None:
+                os.environ.pop("MINDSHIFT_VERSION", None)
+            else:
+                os.environ["MINDSHIFT_VERSION"] = previous
+
 
 if __name__ == "__main__":
     unittest.main()
