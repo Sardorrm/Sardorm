@@ -18,6 +18,14 @@ class PremiumThemeControlsTests(unittest.TestCase):
                 self.text,
             )
 
+    def test_primary_controls_share_state_surfaces(self):
+        for control in ("Button", "OptionButton", "CheckButton"):
+            for state in ("normal", "hover", "pressed", "disabled"):
+                self.assertIn(
+                    f'{control}/styles/{state} = SubResource("Button{state.capitalize()}")',
+                    self.text,
+                )
+
     def test_text_input_and_label_remain_readable(self):
         self.assertIn("LineEdit/font_sizes/font_size = 20", self.text)
         self.assertIn("Label/font_sizes/font_size = 18", self.text)
