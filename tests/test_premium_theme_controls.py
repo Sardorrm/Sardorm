@@ -1,9 +1,13 @@
+import re
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 THEME = ROOT / "themes" / "mindshift_theme.tres"
+COLOR_RE = re.compile(
+    r"(?P<key>[A-Za-z]+(?:/[A-Za-z]+)*) = Color\((?P<values>[^)]+)\)"
+)
 
 
 def _relative_luminance(rgb):
@@ -16,6 +20,19 @@ def _contrast_ratio(foreground, background):
     background_l = _relative_luminance(background)
     light, dark = max(foreground_l, background_l), min(foreground_l, background_l)
     return (light + 0.05) / (dark + 0.05)
+
+
+def _theme_color(text, key):
+    match = next(
+        (match for match in COLOR_RE.finditer(text) if match.group("key") == key),
+        None,
+    )
+    if match is None:
+        raise AssertionError(f"Missing theme color: {key}")
+    values = [float(value.strip()) for value in match.group("values").split(",")]
+    if len(values) != 4:
+        raise AssertionError(f"Expected RGBA for {key}, got {values}")
+    return tuple(values[:3])
 
 
 class PremiumThemeControlsTests(unittest.TestCase):
@@ -55,23 +72,20 @@ class PremiumThemeControlsTests(unittest.TestCase):
         self.assertIn("Label/font_sizes/font_size = 18", self.text)
         self.assertIn("LineEdit/styles/focus = SubResource(\"LineEditFocus\")", self.text)
 
-    def test_wcag_informed_contrast_floor(self):
-        self.assertGreaterEqual(
-            _contrast_ratio((0.52, 0.53, 0.62), (0.07, 0.07, 0.10)),
-            4.5,
-        )
-        self.assertGreaterEqual(
-            _contrast_ratio((0.48, 0.49, 0.58), (0.08, 0.08, 0.12)),
-            4.5,
-        )
-        self.assertGreaterEqual(
-            _contrast_ratio((0.93, 0.93, 0.98), (0.055, 0.058, 0.09)),
-            4.5,
-        )
-        self.assertGreaterEqual(
-            _contrast_ratio((0.70, 0.72, 1.0), (0.12, 0.12, 0.19)),
-            3.0,
-        )
+    def test_wcag_informed_contrast_floor_uses_live_theme_tokens(self):
+        disabled_text = _theme_color(self.text, "Button/colors/font_disabled_color")
+        disabled_bg = _theme_color(self.text, "ButtonDisabled/bg_color")
+        placeholder = _theme_color(self.text, "LineEdit/colors/font_placeholder_color")
+        input_bg = _theme_color(self.text, "LineEditNormal/bg_color")
+        label = _theme_color(self.text, "Label/colors/font_color")
+        panel_bg = _theme_color(self.text, "Panel/bg_color")
+        focus = _theme_color(self.text, "ButtonFocus/border_color")
+        focus_bg = _theme_color(self.text, "ButtonFocus/bg_color")
+
+        self.assertGreaterEqual(_contrast_ratio(disabled_text, disabled_bg), 4.5)
+        self.assertGreaterEqual(_contrast_ratio(placeholder, input_bg), 4.5)
+        self.assertGreaterEqual(_contrast_ratio(label, panel_bg), 4.5)
+        self.assertGreaterEqual(_contrast_ratio(focus, focus_bg), 3.0)
 
     def test_button_state_styles_keep_premium_shape_tokens(self):
         self.assertIn("Button/styles/normal = SubResource(\"ButtonNormal\")", self.text)
