@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 THEME = ROOT / "themes" / "mindshift_theme.tres"
-COLOR_RE = re.compile(r"(?P<key>[A-Za-z]+(?:/[A-Za-z]+)*) = Color\((?P<values>[^)]+)\)")
+COLOR_RE = re.compile(r"(?P<key>[A-Za-z_]+(?:/[A-Za-z_]+)*) = Color\((?P<values>[^)]+)\)")
 SUBRESOURCE_RE = re.compile(
     r'\[sub_resource type="StyleBoxFlat" id="(?P<id>[^"]+)"\](?P<body>.*?)(?=\n\[sub_resource|\n\[resource\]|\Z)',
     re.DOTALL,
