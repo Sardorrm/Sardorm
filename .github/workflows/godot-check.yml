@@ -42,6 +42,8 @@ jobs:
           assert sum(1 for p in puzzles if int(p['difficulty']) == 5) >= 10
           print(f'Validated {len(puzzles)} combined puzzles and gameplay content contracts')
           PY
+      - name: Validate premium theme contract
+        run: python3 scripts/validate_theme.py
       - name: Validate deterministic release version
         run: python3 scripts/validate_versioning.py
       - name: Audit Android export configuration
@@ -64,8 +66,6 @@ jobs:
           cat /tmp/mindshift-runtime.log
           echo "--- End runtime log ---"
           test -s /tmp/mindshift-runtime.log
-          # The headless CLI can return non-zero for a timed/intentional quit.
-          # Treat explicit runtime failure signatures as the release blocker instead.
           ! grep -E "SCRIPT ERROR|Parse Error|ERROR: Failed to load script|Could not load puzzle|Could not load puzzle repository|FATAL:" /tmp/mindshift-runtime.log
           if [ "${status}" -eq 124 ]; then
             echo "Headless smoke reached the timeout window; explicit runtime errors were absent."
