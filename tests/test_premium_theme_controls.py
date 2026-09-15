@@ -26,6 +26,15 @@ class PremiumThemeControlsTests(unittest.TestCase):
                     self.text,
                 )
 
+    def test_primary_controls_share_keyboard_focus_surface(self):
+        for control in ("Button", "OptionButton", "CheckButton"):
+            self.assertIn(
+                f'{control}/styles/focus = SubResource("ButtonFocus")',
+                self.text,
+            )
+        self.assertIn("border_color = Color(0.70, 0.72, 1, 1)", self.text)
+        self.assertIn("expand_margin_left = 2.0", self.text)
+
     def test_text_input_and_label_remain_readable(self):
         self.assertIn("LineEdit/font_sizes/font_size = 20", self.text)
         self.assertIn("Label/font_sizes/font_size = 18", self.text)
