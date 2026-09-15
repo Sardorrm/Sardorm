@@ -44,16 +44,8 @@ static func _normalize_settings(value, defaults: Dictionary) -> Dictionary:
     settings["haptics"] = bool(settings.get("haptics", true))
     return settings
 
-static func load_progress() -> Dictionary:
+static func migrate_data(data: Dictionary) -> Dictionary:
     var defaults := _defaults()
-    if not FileAccess.file_exists(SAVE_PATH):
-        return defaults
-    var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-    if file == null:
-        return defaults
-    var data = JSON.parse_string(file.get_as_text())
-    if typeof(data) != TYPE_DICTIONARY:
-        return defaults
     var result := defaults.duplicate(true)
     var source_version := int(data.get("version", 1))
     result["version"] = SAVE_VERSION
@@ -71,6 +63,18 @@ static func load_progress() -> Dictionary:
     if source_version < 4 and result["lives"].is_empty():
         result["lives"] = defaults["lives"].duplicate(true)
     return result
+
+static func load_progress() -> Dictionary:
+    var defaults := _defaults()
+    if not FileAccess.file_exists(SAVE_PATH):
+        return defaults
+    var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+    if file == null:
+        return defaults
+    var data = JSON.parse_string(file.get_as_text())
+    if typeof(data) != TYPE_DICTIONARY:
+        return defaults
+    return migrate_data(data)
 
 static func save_progress(current_level: int, completed_levels: Array, hints_used: int, stats: Dictionary = {}, achievements: Dictionary = {}, settings: Dictionary = {}, daily_challenges: Dictionary = {}, lives: Dictionary = {}, streak: Dictionary = {}) -> bool:
     var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
