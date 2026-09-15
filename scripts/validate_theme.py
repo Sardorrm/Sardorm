@@ -48,8 +48,8 @@ def _theme_color(text, key, section=None):
     return tuple(values[:3])
 
 
-def main() -> None:
-    text = THEME.read_text(encoding="utf-8")
+def main(theme_path: Path = THEME) -> None:
+    text = theme_path.read_text(encoding="utf-8")
 
     if '[gd_resource type="Theme" load_steps=10 format=3]' not in text:
         raise SystemExit("theme load_steps contract is invalid")
