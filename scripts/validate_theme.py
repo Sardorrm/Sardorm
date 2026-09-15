@@ -15,6 +15,20 @@ REQUIRED_RADIUS_TOKENS = (
 )
 
 
+def _relative_luminance(rgb):
+    channels = []
+    for channel in rgb:
+        channels.append(channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+
+def _contrast_ratio(foreground, background):
+    foreground_l = _relative_luminance(foreground)
+    background_l = _relative_luminance(background)
+    light, dark = max(foreground_l, background_l), min(foreground_l, background_l)
+    return (light + 0.05) / (dark + 0.05)
+
+
 def main() -> None:
     text = THEME.read_text(encoding="utf-8")
 
@@ -38,6 +52,15 @@ def main() -> None:
 
     if not re.search(r"border_color = Color\(0\.70, 0\.72, 1, 1\)", text):
         raise SystemExit("focus contrast token is missing")
+
+    if _contrast_ratio((0.40, 0.41, 0.50), (0.07, 0.07, 0.10)) < 3.0:
+        raise SystemExit("disabled control text contrast is below 3:1")
+    if _contrast_ratio((0.48, 0.49, 0.58), (0.08, 0.08, 0.12)) < 4.5:
+        raise SystemExit("placeholder text contrast is below 4.5:1")
+    if _contrast_ratio((0.93, 0.93, 0.98), (0.055, 0.058, 0.09)) < 4.5:
+        raise SystemExit("label text contrast is below 4.5:1")
+    if _contrast_ratio((0.70, 0.72, 1.0), (0.12, 0.12, 0.19)) < 3.0:
+        raise SystemExit("focus indicator contrast is below 3:1")
 
     for token in REQUIRED_RADIUS_TOKENS:
         if text.count(token) < 5:
