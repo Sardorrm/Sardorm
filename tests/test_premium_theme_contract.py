@@ -30,9 +30,11 @@ class PremiumThemeContractTests(unittest.TestCase):
 
     def test_accessibility_tokens_remain_explicit(self):
         self.assertIn("border_color = Color(0.70, 0.72, 1, 1)", self.text)
-        self.assertIn("Button/colors/font_disabled_color = Color(0.40, 0.41, 0.50, 1)", self.text)
-        self.assertIn("OptionButton/colors/font_disabled_color = Color(0.40, 0.41, 0.50, 1)", self.text)
-        self.assertIn("CheckButton/colors/font_disabled_color = Color(0.40, 0.41, 0.50, 1)", self.text)
+        for control in ("Button", "OptionButton", "CheckButton"):
+            self.assertIn(
+                f"{control}/colors/font_disabled_color = Color(0.52, 0.53, 0.62, 1)",
+                self.text,
+            )
 
     def test_text_input_contract_stays_premium_and_readable(self):
         self.assertIn("LineEdit/font_sizes/font_size = 20", self.text)
