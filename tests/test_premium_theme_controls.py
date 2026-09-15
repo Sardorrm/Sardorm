@@ -84,11 +84,11 @@ class PremiumThemeControlsTests(unittest.TestCase):
         self.assertIn("LineEdit/styles/focus = SubResource(\"LineEditFocus\")", self.text)
 
     def test_wcag_informed_contrast_floor_uses_live_theme_tokens(self):
-        disabled_text = _theme_color(self.text, "font_disabled_color", section=None)
+        disabled_text = _theme_color(self.text, "Button/colors/font_disabled_color")
         disabled_bg = _theme_color(self.text, "bg_color", section="ButtonDisabled")
-        placeholder = _theme_color(self.text, "font_placeholder_color", section=None)
+        placeholder = _theme_color(self.text, "LineEdit/colors/font_placeholder_color")
         input_bg = _theme_color(self.text, "bg_color", section="LineEditNormal")
-        label = _theme_color(self.text, "font_color", section=None)
+        label = _theme_color(self.text, "Label/colors/font_color")
         panel_bg = _theme_color(self.text, "bg_color", section="Panel")
         focus = _theme_color(self.text, "border_color", section="ButtonFocus")
         focus_bg = _theme_color(self.text, "bg_color", section="ButtonFocus")
