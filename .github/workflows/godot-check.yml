@@ -44,6 +44,8 @@ jobs:
           PY
       - name: Validate premium theme contract
         run: python3 scripts/validate_theme.py
+      - name: Run Python regression suite
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Validate deterministic release version
         run: python3 scripts/validate_versioning.py
       - name: Audit Android export configuration
