@@ -5,8 +5,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 THEME = ROOT / "themes" / "mindshift_theme.tres"
-COLOR_RE = re.compile(
-    r"(?P<key>[A-Za-z]+(?:/[A-Za-z]+)*) = Color\((?P<values>[^)]+)\)"
+COLOR_RE = re.compile(r"(?P<key>[A-Za-z]+(?:/[A-Za-z]+)*) = Color\((?P<values>[^)]+)\)")
+SUBRESOURCE_RE = re.compile(
+    r'\[sub_resource type="StyleBoxFlat" id="(?P<id>[^"]+)"\](?P<body>.*?)(?=\n\[sub_resource|\n\[resource\]|\Z)',
+    re.DOTALL,
 )
 
 
@@ -22,16 +24,25 @@ def _contrast_ratio(foreground, background):
     return (light + 0.05) / (dark + 0.05)
 
 
-def _theme_color(text, key):
+def _theme_color(text, key, section=None):
+    scope = text
+    if section is not None:
+        match = next(
+            (match for match in SUBRESOURCE_RE.finditer(text) if match.group("id") == section),
+            None,
+        )
+        if match is None:
+            raise AssertionError(f"Missing theme subresource: {section}")
+        scope = match.group("body")
     match = next(
-        (match for match in COLOR_RE.finditer(text) if match.group("key") == key),
+        (match for match in COLOR_RE.finditer(scope) if match.group("key") == key),
         None,
     )
     if match is None:
-        raise AssertionError(f"Missing theme color: {key}")
+        raise AssertionError(f"Missing theme color: {section or 'resource'}:{key}")
     values = [float(value.strip()) for value in match.group("values").split(",")]
     if len(values) != 4:
-        raise AssertionError(f"Expected RGBA for {key}, got {values}")
+        raise AssertionError(f"Expected RGBA for {section or 'resource'}:{key}, got {values}")
     return tuple(values[:3])
 
 
@@ -73,14 +84,14 @@ class PremiumThemeControlsTests(unittest.TestCase):
         self.assertIn("LineEdit/styles/focus = SubResource(\"LineEditFocus\")", self.text)
 
     def test_wcag_informed_contrast_floor_uses_live_theme_tokens(self):
-        disabled_text = _theme_color(self.text, "Button/colors/font_disabled_color")
-        disabled_bg = _theme_color(self.text, "ButtonDisabled/bg_color")
-        placeholder = _theme_color(self.text, "LineEdit/colors/font_placeholder_color")
-        input_bg = _theme_color(self.text, "LineEditNormal/bg_color")
-        label = _theme_color(self.text, "Label/colors/font_color")
-        panel_bg = _theme_color(self.text, "Panel/bg_color")
-        focus = _theme_color(self.text, "ButtonFocus/border_color")
-        focus_bg = _theme_color(self.text, "ButtonFocus/bg_color")
+        disabled_text = _theme_color(self.text, "font_disabled_color", section=None)
+        disabled_bg = _theme_color(self.text, "bg_color", section="ButtonDisabled")
+        placeholder = _theme_color(self.text, "font_placeholder_color", section=None)
+        input_bg = _theme_color(self.text, "bg_color", section="LineEditNormal")
+        label = _theme_color(self.text, "font_color", section=None)
+        panel_bg = _theme_color(self.text, "bg_color", section="Panel")
+        focus = _theme_color(self.text, "border_color", section="ButtonFocus")
+        focus_bg = _theme_color(self.text, "bg_color", section="ButtonFocus")
 
         self.assertGreaterEqual(_contrast_ratio(disabled_text, disabled_bg), 4.5)
         self.assertGreaterEqual(_contrast_ratio(placeholder, input_bg), 4.5)
