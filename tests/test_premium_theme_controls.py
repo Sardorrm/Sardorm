@@ -90,15 +90,21 @@ class PremiumThemeControlsTests(unittest.TestCase):
         disabled_bg = _theme_color(self.text, "bg_color", section="ButtonDisabled")
         placeholder = _theme_color(self.text, "LineEdit/colors/font_placeholder_color")
         input_bg = _theme_color(self.text, "bg_color", section="LineEditNormal")
+        disabled_input_text = _theme_color(self.text, "LineEdit/colors/font_disabled_color")
+        disabled_input_bg = _theme_color(self.text, "bg_color", section="LineEditDisabled")
         label = _theme_color(self.text, "Label/colors/font_color")
         panel_bg = _theme_color(self.text, "bg_color", section="Panel")
         focus = _theme_color(self.text, "border_color", section="ButtonFocus")
         focus_bg = _theme_color(self.text, "bg_color", section="ButtonFocus")
+        input_focus = _theme_color(self.text, "border_color", section="LineEditFocus")
+        input_focus_bg = _theme_color(self.text, "bg_color", section="LineEditFocus")
 
         self.assertGreaterEqual(_contrast_ratio(disabled_text, disabled_bg), 4.5)
         self.assertGreaterEqual(_contrast_ratio(placeholder, input_bg), 4.5)
+        self.assertGreaterEqual(_contrast_ratio(disabled_input_text, disabled_input_bg), 4.5)
         self.assertGreaterEqual(_contrast_ratio(label, panel_bg), 4.5)
         self.assertGreaterEqual(_contrast_ratio(focus, focus_bg), 3.0)
+        self.assertGreaterEqual(_contrast_ratio(input_focus, input_focus_bg), 3.0)
 
     def test_button_state_styles_keep_premium_shape_tokens(self):
         self.assertIn("Button/styles/normal = SubResource(\"ButtonNormal\")", self.text)
