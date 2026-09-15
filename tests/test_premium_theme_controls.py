@@ -10,6 +10,9 @@ class PremiumThemeControlsTests(unittest.TestCase):
     def setUp(self):
         self.text = THEME.read_text(encoding="utf-8")
 
+    def test_theme_resource_load_contract(self):
+        self.assertIn('[gd_resource type="Theme" load_steps=9 format=3]', self.text)
+
     def test_primary_controls_share_accessible_typography(self):
         for control in ("Button", "OptionButton", "CheckButton"):
             self.assertIn(f"{control}/font_sizes/font_size = 19", self.text)
