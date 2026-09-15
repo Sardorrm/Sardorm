@@ -51,7 +51,7 @@ class PremiumThemeControlsTests(unittest.TestCase):
         self.text = THEME.read_text(encoding="utf-8")
 
     def test_theme_resource_load_contract(self):
-        self.assertIn('[gd_resource type="Theme" load_steps=9 format=3]', self.text)
+        self.assertIn('[gd_resource type="Theme" load_steps=10 format=3]', self.text)
 
     def test_primary_controls_share_accessible_typography(self):
         for control in ("Button", "OptionButton", "CheckButton"):
@@ -78,10 +78,12 @@ class PremiumThemeControlsTests(unittest.TestCase):
         self.assertIn("border_color = Color(0.70, 0.72, 1, 1)", self.text)
         self.assertIn("expand_margin_left = 2.0", self.text)
 
-    def test_text_input_and_label_remain_readable(self):
+    def test_text_input_has_complete_interaction_contract(self):
         self.assertIn("LineEdit/font_sizes/font_size = 20", self.text)
-        self.assertIn("Label/font_sizes/font_size = 18", self.text)
         self.assertIn("LineEdit/styles/focus = SubResource(\"LineEditFocus\")", self.text)
+        self.assertIn("LineEdit/styles/disabled = SubResource(\"LineEditDisabled\")", self.text)
+        self.assertIn("LineEdit/colors/font_disabled_color = Color(0.58, 0.59, 0.66, 1)", self.text)
+        self.assertIn("Label/font_sizes/font_size = 18", self.text)
 
     def test_wcag_informed_contrast_floor_uses_live_theme_tokens(self):
         disabled_text = _theme_color(self.text, "Button/colors/font_disabled_color")
