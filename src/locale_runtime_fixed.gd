@@ -33,7 +33,7 @@ func translate_puzzle_text(puzzle_id: String, fallback: String) -> String:
 
 func set_language(next_language: String) -> void:
     var normalized := next_language.to_lower().strip_edges()
-    if not LANGUAGES.has(normalized):
+    if normalized not in LANGUAGES:
         return
     language = normalized
     _persist()
