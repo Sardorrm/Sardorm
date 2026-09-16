@@ -16,7 +16,11 @@ func setup(puzzle_repository: PuzzleRepository, save_data: Dictionary = {}) -> v
     if typeof(stored) == TYPE_DICTIONARY:
         completed_dates = _sanitize_completed_dates(stored.get("completed_dates", []))
         var stored_date := str(stored.get("date", ""))
-        if stored_date == DailyChallenge.date_key():
+        if stored_date == DailyChallenge.date_key() and _is_valid_date_key(stored_date):
+            # Restore the session clock before refresh(). Otherwise refresh()
+            # sees the default empty date as a rollover and silently wipes the
+            # persisted position/count on every app restart.
+            current_date = stored_date
             completed_count = clampi(int(stored.get("completed_count", 0)), 0, CHALLENGE_SIZE)
             current_position = clampi(int(stored.get("current_position", completed_count)), 0, CHALLENGE_SIZE)
     refresh()
