@@ -14,37 +14,29 @@ var time_limit_seconds: float
 var tags: Array = []
 
 static func from_dict(data: Dictionary) -> PuzzleDefinition:
-    var puzzle := PuzzleDefinition.new()
+    var puzzle: PuzzleDefinition = PuzzleDefinition.new()
     puzzle.id = str(data.get("id", "")).strip_edges()
     puzzle.category = str(data.get("category", "")).strip_edges().to_lower()
-    # Do not clamp source data here: invalid difficulty must reach the validator
-    # instead of being silently converted into a valid catalog entry.
     puzzle.difficulty = int(data.get("difficulty", 0))
     puzzle.prompt = str(data.get("prompt", ""))
     puzzle.hint = str(data.get("hint", ""))
     puzzle.explanation = str(data.get("explanation", ""))
     puzzle.answer = data.get("answer", "")
-    if typeof(data.get("answers", [])) == TYPE_ARRAY:
-        puzzle.answers = data.get("answers", []).duplicate()
-    puzzle.answer_type = str(data.get("answer_type", _infer_answer_type(puzzle.answer))).strip_edges().to_lower()
-    puzzle.time_limit_seconds = max(0.0, float(data.get("time_limit_seconds", 0.0)))
-    if typeof(data.get("tags", [])) == TYPE_ARRAY:
-        puzzle.tags = data.get("tags", []).duplicate()
-    # Localize presentation text only. Canonical answers remain unchanged so
-    # scoring, persistence and validation stay language-independent.
-    var main_loop := Engine.get_main_loop()
-    if main_loop != null and main_loop is SceneTree:
-        var root := main_loop.root
-        var locale := root.get_node_or_null("MindShiftLocaleRuntime")
-        if locale != null:
-            if locale.has_method("translate_puzzle_text"):
-                puzzle.prompt = locale.translate_puzzle_text(puzzle.id, puzzle.prompt)
-            elif locale.has_method("translate"):
-                puzzle.prompt = locale.translate(puzzle.prompt)
+    var raw_answers = data.get("answers", [])
+    if typeof(raw_answers) == TYPE_ARRAY:
+        puzzle.answers = raw_answers.duplicate()
+    var raw_type = data.get("answer_type", _infer_answer_type(puzzle.answer))
+    puzzle.answer_type = str(raw_type).strip_edges().to_lower()
+    puzzle.time_limit_seconds = maxf(0.0, float(data.get("time_limit_seconds", 0.0)))
+    var raw_tags = data.get("tags", [])
+    if typeof(raw_tags) == TYPE_ARRAY:
+        puzzle.tags = raw_tags.duplicate()
     return puzzle
 
 func get_answers() -> Array:
-    return answers if not answers.is_empty() else [answer]
+    if not answers.is_empty():
+        return answers
+    return [answer]
 
 func is_timed() -> bool:
     return time_limit_seconds > 0.0
@@ -53,7 +45,7 @@ func has_explanation() -> bool:
     return not explanation.strip_edges().is_empty()
 
 func to_dict() -> Dictionary:
-    var result := {
+    var result: Dictionary = {
         "id": id,
         "category": category,
         "difficulty": difficulty,
