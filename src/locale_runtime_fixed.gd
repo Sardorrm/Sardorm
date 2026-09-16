@@ -15,8 +15,7 @@ var selector: HBoxContainer
 
 func _ready() -> void:
     var data: Dictionary = SaveManager.load_progress()
-    var settings = data.get("settings", {})
-    var stored := str(settings.get("language", "uz")) if settings is Dictionary else "uz"
+    var stored := str(data.get("settings", {}).get("language", "uz"))
     language = stored if stored in LANGUAGES else "uz"
     get_tree().node_added.connect(_on_node_added)
     call_deferred("_refresh")
