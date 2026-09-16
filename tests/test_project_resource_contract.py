@@ -16,6 +16,7 @@ class ProjectResourceContractTests(unittest.TestCase):
         self.text = PROJECT.read_text(encoding="utf-8")
 
     def _assert_resource(self, relative_path, label):
+        self.assertFalse(relative_path.startswith("/"), f"{label} resource must remain repository-relative")
         path = ROOT / relative_path
         self.assertTrue(path.is_file(), f"Missing {label} resource: {relative_path}")
 
