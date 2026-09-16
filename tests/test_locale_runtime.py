@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class LocaleRuntimeContractTests(unittest.TestCase):
     def test_three_languages_and_persistent_selector_contract(self):
-        code = (ROOT / "src" / "locale_runtime_fixed.gd").read_text(encoding="utf-8")
+        code = (ROOT / "src/locale_runtime_fixed.gd").read_text(encoding="utf-8")
         project = (ROOT / "project.godot").read_text(encoding="utf-8")
         self.assertIn('const LANGUAGES: Array[String] = ["uz", "ru", "en"]', code)
         self.assertIn('"DAVOM ETISH":"ПРОДОЛЖИТЬ"', code)
@@ -17,7 +17,7 @@ class LocaleRuntimeContractTests(unittest.TestCase):
 
     def test_selector_has_all_language_buttons_and_safe_default(self):
         code = (ROOT / "src/locale_runtime_fixed.gd").read_text(encoding="utf-8")
-        self.assertIn('var stored: String = str(raw_settings.get("language", "uz"))', code)
+        self.assertIn('var stored: String = str(raw_settings.get("language", "uz")) if raw_settings is Dictionary else "uz"', code)
         self.assertIn('language = stored if stored in LANGUAGES else "uz"', code)
         self.assertIn('for code in LANGUAGES:', code)
         self.assertIn('button.name = "Language_" + code', code)
