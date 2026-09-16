@@ -1,7 +1,7 @@
 class_name PuzzleTranslations
 extends RefCounted
 
-const TEXTS = {
+const TEXTS := {
     "mvp-001": {"ru": "Какое число следующее? 2, 4, 8, 16, ?", "en": "What number comes next? 2, 4, 8, 16, ?"},
     "mvp-002": {"ru": "В коробке 3 красных и 3 синих шара. Сколько шаров минимум нужно взять вслепую, чтобы гарантированно получить два одного цвета?", "en": "A box has 3 red and 3 blue balls. What is the minimum number to draw blind to guarantee two of the same color?"},
     "mvp-003": {"ru": "Что дальше? 1, 1, 2, 3, 5, 8, ?", "en": "What comes next? 1, 1, 2, 3, 5, 8, ?"},
@@ -18,6 +18,6 @@ static func get(puzzle_id: String, language: String, fallback: String) -> String
     if not TEXTS.has(puzzle_id):
         return fallback
     var translations = TEXTS[puzzle_id]
-    if translations is Dictionary and translations.has(language):
+    if typeof(translations) == TYPE_DICTIONARY and translations.has(language):
         return str(translations[language])
     return fallback
