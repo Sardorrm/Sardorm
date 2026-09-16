@@ -31,15 +31,15 @@ class AndroidPackageMetadataTests(unittest.TestCase):
             self.skipTest("Android export preset is an external release-account gate")
         text = EXPORT_PRESETS.read_text(encoding="utf-8")
         android_sections = re.findall(
-            r"\[preset\.[^\]]+\]\s*(.*?)(?=\n\[preset\.|\Z)",
+            r"\[preset\.[^\]]+\](.*?)(?=\n\[preset\.|\Z)",
             text,
             re.DOTALL,
         )
         android = [section for section in android_sections if 'platform="Android"' in section]
         self.assertTrue(android, "Android export preset is missing")
         self.assertTrue(
-            any("package/unique_name" in section for section in android),
-            "Android preset must declare package/unique_name",
+            any('package/unique_name="com.sardorrm.mindshift"' in section for section in android),
+            "Android preset must declare the MindShift package identity",
         )
 
     def test_project_does_not_contain_release_secrets(self) -> None:
