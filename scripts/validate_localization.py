@@ -14,11 +14,12 @@ def main() -> int:
     runtime = RUNTIME.read_text(encoding="utf-8")
     catalog = CATALOG.read_text(encoding="utf-8")
 
-    assert 'const LANGUAGES := ["uz", "ru", "en"]' in runtime
-    assert 'const PUZZLE_TRANSLATIONS := preload("res://src/puzzle_translations.gd")' in runtime
+    assert 'const LANGUAGES: Array[String] = ["uz", "ru", "en"]' in runtime
+    assert 'const PUZZLE_TRANSLATIONS = preload("res://src/puzzle_translations.gd")' in runtime
     assert 'if language == "uz":' in runtime
     assert 'PuzzleTranslations.get(puzzle_id, language, "")' in runtime
     assert 'if normalized not in LANGUAGES:' in runtime
+    assert 'var settings: Dictionary = raw_settings.duplicate(true) if raw_settings is Dictionary else {}' in runtime
 
     ids = re.findall(r'"(mvp-\d{3})":\s*\{"ru":\s*".*?",\s*"en":\s*".*?"\}', catalog)
     assert len(ids) >= 20, f"expected at least 20 translated puzzles, found {len(ids)}"
@@ -26,7 +27,7 @@ def main() -> int:
     expected = {f"mvp-{n:03d}" for n in range(11, 31)}
     assert expected <= set(ids), "mvp-011..mvp-030 translation coverage is incomplete"
     assert 'static func get(puzzle_id: String, language: String, fallback: String) -> String:' in catalog
-    assert 'translations.get(language, fallback)' in catalog
+    assert 'var translations: Dictionary = TEXTS[puzzle_id]' in catalog
 
     print(f"Validated locale runtime and {len(ids)} shared puzzle translations")
     return 0
