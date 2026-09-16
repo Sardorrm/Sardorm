@@ -11,7 +11,7 @@ class SaveManagerContractTests(unittest.TestCase):
         cls.source = SAVE_MANAGER.read_text(encoding="utf-8")
 
     def test_save_format_is_versioned_and_has_language_default(self):
-        self.assertIn("const SAVE_VERSION := 6", self.source)
+        self.assertIn("const SAVE_VERSION: int = 6", self.source)
         self.assertIn('"language": "uz"', self.source)
         self.assertIn('result["version"] = SAVE_VERSION', self.source)
 
@@ -23,13 +23,14 @@ class SaveManagerContractTests(unittest.TestCase):
 
     def test_settings_language_is_safe_and_deterministic(self):
         self.assertIn("func _normalize_settings(value, defaults: Dictionary) -> Dictionary:", self.source)
-        self.assertIn('if language not in ["uz", "ru", "en"]:', self.source)
+        self.assertIn('const SUPPORTED_LANGUAGES: Array[String] = ["uz", "ru", "en"]', self.source)
+        self.assertIn("if language not in SUPPORTED_LANGUAGES:", self.source)
         self.assertIn('language = "uz"', self.source)
         self.assertIn('settings["sound"] = bool(settings.get("sound", true))', self.source)
         self.assertIn('settings["haptics"] = bool(settings.get("haptics", true))', self.source)
 
     def test_save_path_and_corrupt_fallback_remain_guarded(self):
-        self.assertIn('const SAVE_PATH := "user://mindshift_save.json"', self.source)
+        self.assertIn('const SAVE_PATH: String = "user://mindshift_save.json"', self.source)
         self.assertIn('if not FileAccess.file_exists(SAVE_PATH):', self.source)
         self.assertIn('if typeof(data) != TYPE_DICTIONARY:', self.source)
         self.assertIn('return defaults', self.source)
