@@ -15,11 +15,12 @@ for fragment in required_fragments:
     assert fragment in source, f"Missing UI polish contract: {fragment}"
 
 # Safe-area handling must scale screen-space insets into the current UI viewport.
-assert 'var scale := Vector2(_ui.size.x / float(screen.x), _ui.size.y / float(screen.y))' in source
-assert 'left += maxf(0.0, float(safe.position.x) * scale.x)' in source
-assert 'right += maxf(0.0, safe_right)' in source
-assert 'top += maxf(0.0, float(safe.position.y) * scale.y)' in source
-assert 'bottom += maxf(0.0, safe_bottom)' in source
+assert 'func calculate_safe_margins(ui_size: Vector2, screen_size: Vector2, safe: Rect2, mobile: bool) -> Vector4:' in source
+assert 'var scale := Vector2(ui_size.x / screen_size.x, ui_size.y / screen_size.y)' in source
+assert 'left += maxf(0.0, safe.position.x * scale.x)' in source
+assert 'right += maxf(0.0, (screen_size.x - safe.end.x) * scale.x)' in source
+assert 'top += maxf(0.0, safe.position.y * scale.y)' in source
+assert 'bottom += maxf(0.0, (screen_size.y - safe.end.y) * scale.y)' in source
 
 # Runtime polish must be idempotent: each node is styled once and removed nodes are cleaned up.
 assert 'if styled_nodes.has(node_id):' in source
