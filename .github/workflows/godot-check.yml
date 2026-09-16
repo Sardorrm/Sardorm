@@ -44,6 +44,8 @@ jobs:
           PY
       - name: Validate premium theme contract
         run: python3 scripts/validate_theme.py
+      - name: Validate UI polish accessibility contract
+        run: python3 scripts/validate_ui_polish.py
       - name: Run Python regression suite
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Validate deterministic release version
