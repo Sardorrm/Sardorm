@@ -24,6 +24,15 @@ class UIThemeAccessibilityContractTests(unittest.TestCase):
         main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
         self.assertIn('answer.custom_minimum_size = Vector2(0, 64)', main)
         self.assertIn('answer.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER', main)
+        self.assertIn('answer.grab_focus()', main)
+
+    def test_theme_provides_visible_focus_and_text_selection_feedback(self):
+        theme = (ROOT / "themes" / "mindshift_theme.tres").read_text(encoding="utf-8")
+        self.assertIn('Button/colors/font_focus_color = Color(1, 1, 1, 1)', theme)
+        self.assertIn('Button/styles/focus = SubResource("ButtonFocus")', theme)
+        self.assertIn('LineEdit/colors/caret_color = Color(0.70, 0.72, 1, 1)', theme)
+        self.assertIn('LineEdit/colors/selection_color = Color(0.43, 0.45, 0.80, 0.35)', theme)
+        self.assertIn('LineEdit/styles/focus = SubResource("LineEditFocus")', theme)
 
     def test_core_gameplay_buttons_use_the_shared_minimum_target(self):
         main = (ROOT / "src" / "main.gd").read_text(encoding="utf-8")
