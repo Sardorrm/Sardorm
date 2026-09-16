@@ -31,6 +31,17 @@ static func from_dict(data: Dictionary) -> PuzzleDefinition:
     var raw_tags = data.get("tags", [])
     if typeof(raw_tags) == TYPE_ARRAY:
         puzzle.tags = raw_tags.duplicate()
+    # Presentation is localized at runtime; canonical answer data is untouched.
+    var main_loop: MainLoop = Engine.get_main_loop()
+    if main_loop != null and main_loop is SceneTree:
+        var scene_tree: SceneTree = main_loop as SceneTree
+        var root: Node = scene_tree.root
+        var locale: Node = root.get_node_or_null("MindShiftLocaleRuntime")
+        if locale != null:
+            if locale.has_method("translate_puzzle_text"):
+                puzzle.prompt = locale.translate_puzzle_text(puzzle.id, puzzle.prompt)
+            elif locale.has_method("translate"):
+                puzzle.prompt = locale.translate(puzzle.prompt)
     return puzzle
 
 func get_answers() -> Array:
