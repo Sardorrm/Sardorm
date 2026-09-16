@@ -97,25 +97,26 @@ func _refresh_safe_area_if_needed(force := false) -> void:
 func _apply_safe_area() -> void:
     if not is_instance_valid(_ui) or not is_instance_valid(_margin):
         return
+    var screen := DisplayServer.screen_get_size(DisplayServer.SCREEN_OF_MAIN_WINDOW)
+    var safe := DisplayServer.get_display_safe_area()
+    var margins := calculate_safe_margins(_ui.size, Vector2(screen), safe, OS.has_feature("android") or OS.has_feature("ios"))
+    _margin.add_theme_constant_override("margin_left", roundi(margins.x))
+    _margin.add_theme_constant_override("margin_right", roundi(margins.y))
+    _margin.add_theme_constant_override("margin_top", roundi(margins.z))
+    _margin.add_theme_constant_override("margin_bottom", roundi(margins.w))
+
+func calculate_safe_margins(ui_size: Vector2, screen_size: Vector2, safe: Rect2, mobile: bool) -> Vector4:
     var left := BASE_MARGIN_LEFT
     var right := BASE_MARGIN_RIGHT
     var top := BASE_MARGIN_TOP
     var bottom := BASE_MARGIN_BOTTOM
-    if OS.has_feature("android") or OS.has_feature("ios"):
-        var safe := DisplayServer.get_display_safe_area()
-        var screen := DisplayServer.screen_get_size(DisplayServer.SCREEN_OF_MAIN_WINDOW)
-        if safe.size.x > 0 and safe.size.y > 0 and screen.x > 0 and screen.y > 0:
-            var scale := Vector2(_ui.size.x / float(screen.x), _ui.size.y / float(screen.y))
-            left += maxf(0.0, float(safe.position.x) * scale.x)
-            top += maxf(0.0, float(safe.position.y) * scale.y)
-            var safe_right := float(screen.x - safe.end.x) * scale.x
-            var safe_bottom := float(screen.y - safe.end.y) * scale.y
-            right += maxf(0.0, safe_right)
-            bottom += maxf(0.0, safe_bottom)
-    _margin.add_theme_constant_override("margin_left", roundi(left))
-    _margin.add_theme_constant_override("margin_right", roundi(right))
-    _margin.add_theme_constant_override("margin_top", roundi(top))
-    _margin.add_theme_constant_override("margin_bottom", roundi(bottom))
+    if mobile and safe.size.x > 0 and safe.size.y > 0 and screen_size.x > 0 and screen_size.y > 0 and ui_size.x > 0 and ui_size.y > 0:
+        var scale := Vector2(ui_size.x / screen_size.x, ui_size.y / screen_size.y)
+        left += maxf(0.0, safe.position.x * scale.x)
+        top += maxf(0.0, safe.position.y * scale.y)
+        right += maxf(0.0, (screen_size.x - safe.end.x) * scale.x)
+        bottom += maxf(0.0, (screen_size.y - safe.end.y) * scale.y)
+    return Vector4(left, right, top, bottom)
 
 func _apply_static_polish(node: Node) -> void:
     var node_id := node.get_instance_id()
