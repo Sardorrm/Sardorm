@@ -158,7 +158,7 @@ class PuzzleIntegrityTests(unittest.TestCase):
 
     def test_save_version_and_migration_contract(self):
         code = (ROOT / "src/save_manager.gd").read_text(encoding="utf-8")
-        self.assertIn("const SAVE_VERSION := 6", code)
+        self.assertIn("const SAVE_VERSION: int = 6", code)
         self.assertIn("source_version", code)
         self.assertIn("data.get(\"version\", 1)", code)
         self.assertIn("completed_levels", code)
