@@ -7,7 +7,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 class SaveManagerContractTests(unittest.TestCase):
     def test_save_schema_is_versioned(self):
         code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
-        self.assertIn("const SAVE_VERSION := 6", code)
+        self.assertIn("const SAVE_VERSION: int = 6", code)
         self.assertIn('"version": SAVE_VERSION', code)
         self.assertIn("static func load_progress()", code)
         self.assertIn("static func save_progress(", code)
@@ -18,7 +18,7 @@ class SaveManagerContractTests(unittest.TestCase):
             'data.get("completed_levels", data.get("completed", []))',
             'data.get("hints_used", 0)',
             'data.get("settings", {})',
-            'var settings := defaults["settings"].merged(value)',
+            'var settings: Dictionary = defaults["settings"].merged(value)',
             'settings["language"] = language',
             'settings["sound"] = bool(settings.get("sound", true))',
             'settings["haptics"] = bool(settings.get("haptics", true))',
@@ -28,7 +28,7 @@ class SaveManagerContractTests(unittest.TestCase):
 
     def test_migration_guards_older_schema_versions(self):
         code = (ROOT / "src" / "save_manager.gd").read_text(encoding="utf-8")
-        self.assertIn('var source_version := int(data.get("version", 1))', code)
+        self.assertIn('var source_version: int = int(data.get("version", 1))', code)
         self.assertIn('if source_version < 5 and result["streak"].is_empty():', code)
         self.assertIn('if source_version < 4 and result["lives"].is_empty():', code)
 
