@@ -21,12 +21,12 @@ class AppLifecycleContractTests(unittest.TestCase):
         self.assertIn("session.state == GameSession.STATE_ACTIVE", lifecycle)
         self.assertIn("session.paused", lifecycle)
         self.assertIn("main._toggle_pause()", lifecycle)
-        self.assertIn("_paused_by_lifecycle = true", lifecycle)
+        self.assertIn("paused_by_lifecycle = true", lifecycle)
 
     def test_resume_only_reverses_a_lifecycle_pause(self):
         lifecycle = (ROOT / "src" / "app_lifecycle.gd").read_text(encoding="utf-8")
-        self.assertIn("if not _paused_by_lifecycle:", lifecycle)
-        self.assertIn("_paused_by_lifecycle = false", lifecycle)
+        self.assertIn("if not paused_by_lifecycle:", lifecycle)
+        self.assertIn("paused_by_lifecycle = false", lifecycle)
 
 
 if __name__ == "__main__":
